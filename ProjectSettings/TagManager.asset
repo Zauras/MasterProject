@@ -3,7 +3,13 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Point
+  - Trajectory
+  - VecPoint
+  - VectorPointer
+  - Path
+  - ControlPoint
   layers:
   - Default
   - TransparentFX
