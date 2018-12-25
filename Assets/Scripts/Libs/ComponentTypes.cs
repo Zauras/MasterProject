@@ -139,21 +139,33 @@ namespace Master
 
     }
 
-    public struct FittedMovement
-    {
-        public FittedMovement(float3[] positions, float4[] rotations) : this()
-        { this.positions = positions; this.rotations = rotations; }
-        public float3[] positions;
-        public float4[] rotations;
-
-    }
-
     public struct DisplacementData
     {
         public DisplacementData(float3 position, quaternion rotation) : this()
         { this.position = position; this.rotation = rotation; }
         public float3 position;
         public quaternion rotation;
+    }
+
+    public struct FittedMovement
+    {
+        public FittedMovement(float3[] positions, float4[] rotations) : this()
+        { this.positions = positions; this.rotations = rotations; }
+        public float3[] positions;
+        public float4[] rotations;
+    }
+
+    public struct EulerRodriguesFrame
+    {
+        public EulerRodriguesFrame(float3 ERFx, float3 ERFy, float3 ERFz) : this()
+        {
+            this.ERFx = ERFx;
+            this.ERFy = ERFy;
+            this.ERFz = ERFz;
+        }
+        public float3 ERFx;
+        public float3 ERFy;
+        public float3 ERFz;
     }
 
 

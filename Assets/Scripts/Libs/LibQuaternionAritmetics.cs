@@ -19,8 +19,8 @@ namespace Master
     }
 
     public sealed class LibQuaternionAritmetics
-	{
-		public static LibQuaternionAritmetics H;
+    {
+        public static LibQuaternionAritmetics H;
 
         public static quaternion ii = new quaternion(1f, 0f, 0f, 0f); // x, y, z, w
         public static quaternion jj = new quaternion(0f, 1f, 0f, 0f);
@@ -35,41 +35,45 @@ namespace Master
         public static float4 jjfm = new float4(0f, 0f, 1f, 0f);
         public static float4 kkfm = new float4(0f, 0f, 0f, 1f);
 
-        public static float4Matrix MulPQ (float4 p)
+        public static float4Matrix MulPQ(float4 p)
         {
             return new float4Matrix(
-                new float4 ( p.x, -p.y, -p.z, -p.w ),
-                new float4 ( p.y,  p.x, -p.w,  p.z ),
-                new float4 ( p.z,  p.w,  p.x, -p.y ),
-                new float4 ( p.w, -p.z,  p.y,  p.x )         
-            );     
+                new float4(p.x, -p.y, -p.z, -p.w),
+                new float4(p.y, p.x, -p.w, p.z),
+                new float4(p.z, p.w, p.x, -p.y),
+                new float4(p.w, -p.z, p.y, p.x)
+            );
         }
 
-      
+
         public static float4Matrix MulQP(float4 p)
         {
             return new float4Matrix(
-                new float4(p.x, -p.y, -p.z, -p.w ),
-                new float4(p.y,  p.x,  p.w, -p.z ),
-                new float4(p.z, -p.w,  p.x,  p.y ),
-                new float4(p.w,  p.z, -p.y,  p.x )
+                new float4(p.x, -p.y, -p.z, -p.w),
+                new float4(p.y, p.x, p.w, -p.z),
+                new float4(p.z, -p.w, p.x, p.y),
+                new float4(p.w, p.z, -p.y, p.x)
             );
         }
 
         public static float4Matrix SubMatrix(float4Matrix m1, float4Matrix m2)
         {
             return new float4Matrix(
-                Round (new float4(m1.r0.x - m2.r0.x, m1.r0.y - m2.r0.y, m1.r0.z - m2.r0.z, m1.r0.w - m2.r0.w)),
-                Round (new float4(m1.r1.x - m2.r1.x, m1.r1.y - m2.r1.y, m1.r1.z - m2.r1.z, m1.r1.w - m2.r1.w)),
-                Round (new float4(m1.r2.x - m2.r2.x, m1.r2.y - m2.r2.y, m1.r2.z - m2.r2.z, m1.r2.w - m2.r2.w)),
-                Round (new float4(m1.r3.x - m2.r3.x, m1.r3.y - m2.r3.y, m1.r3.z - m2.r3.z, m1.r3.w - m2.r3.w))
+                Round(new float4(m1.r0.x - m2.r0.x, m1.r0.y - m2.r0.y, m1.r0.z - m2.r0.z, m1.r0.w - m2.r0.w)),
+                Round(new float4(m1.r1.x - m2.r1.x, m1.r1.y - m2.r1.y, m1.r1.z - m2.r1.z, m1.r1.w - m2.r1.w)),
+                Round(new float4(m1.r2.x - m2.r2.x, m1.r2.y - m2.r2.y, m1.r2.z - m2.r2.z, m1.r2.w - m2.r2.w)),
+                Round(new float4(m1.r3.x - m2.r3.x, m1.r3.y - m2.r3.y, m1.r3.z - m2.r3.z, m1.r3.w - m2.r3.w))
             );
         }
 
-        public static float4 Bezier(float t, float4[] cp, float4[] icp)
+        public static (float4, float4, float4) Bezier(float t, float4[] cp, float4[] icp, float4[] rotPolym)
         {
-            float delta = -1*(t - 1);
-            //float4 bezierPoint = math.pow(delta, 2f) * A0 + 2f * delta * t * A1 + math.pow(t, 2f) * A2;
+            float delta = -1 * (t - 1);
+            // rotPolym = [A0, A1, A2]
+            float4 rotation = math.pow(delta, 2f) * rotPolym[0] 
+                                + 2f * delta * t * rotPolym[1] 
+                                + math.pow(t, 2f) * rotPolym[2];
+
             float bern40 = m.pow(delta, 4f);
             float bern41 = 4f * t * m.pow(delta, 3f);
             float bern42 = 6f * m.pow(t, 2f) * m.pow(delta, 2f);
@@ -83,21 +87,22 @@ namespace Master
             float bern54 = 5f * m.pow(t, 4f) * delta;
             float bern55 = m.pow(t, 5f);
 
-            float4 point = cp[0] * bern40 +
+            // Hodografas?
+            float4 pointHod = cp[0] * bern40 +
                             cp[1] * bern41 +
                             cp[2] * bern42 +
                             cp[3] * bern43 +
                             cp[4] * bern42;
-
-            float4 point2 = icp[0] * bern50 +
+            // PH Kreive
+            float4 pointPH = icp[0] * bern50 +
                             icp[1] * bern51 +
                             icp[2] * bern52 +
                             icp[3] * bern53 +
                             icp[4] * bern54 +
                             icp[5] * bern55;
-            return point2;
-        }
 
+            return (pointPH, pointHod, rotation);
+        }
 
         public static float4 Round(float4 h)
         {
@@ -197,8 +202,7 @@ namespace Master
 			return new float4 (xNeg, yNeg, zNeg, quaternion.w);
 		}
 
-
-		public static float4 Abs(float4 quaternion)
+        public static float4 Abs(float4 quaternion)
         {
 			float xx = math.sqrt (quaternion.x * quaternion.x);
 			float yy = math.sqrt (quaternion.y * quaternion.y);
@@ -279,6 +283,30 @@ namespace Master
         {
             return new float4(vec4.w, vec4.x, vec4.y, vec4.z);
         }
+
+        public static bool isEqual(Vector3 v3, float3 f3)
+        {
+            return (v3.x == f3.x && v3.y == f3.y && v3.z == f3.z);
+        }
+
+        public static bool isEqual(Quaternion Q, quaternion q)
+        {
+            return (Q.x == (int) (q.value.x * 10f) / 10f
+                 && Q.y == (int) (q.value.y * 10f) / 10f
+                 && Q.z == (int) (q.value.z * 10f) / 10f
+                 && Q.w == (int) (q.value.w * 10f) / 10f);
+        }
+
+        public static bool isEqual(quaternion q0, quaternion q)
+        {
+            return ((int)(q0.value.x * 10f) / 10f == (int)(q.value.x * 10f) / 10f
+                 && (int)(q0.value.x * 10f) / 10f == (int)(q.value.y * 10f) / 10f
+                 && (int)(q0.value.x * 10f) / 10f == (int)(q.value.z * 10f) / 10f
+                 && (int)(q0.value.x * 10f) / 10f == (int)(q.value.w * 10f) / 10f);
+        }
+
+
+
 
     }
 

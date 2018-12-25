@@ -8,6 +8,9 @@ namespace Master {
     public class MasterSettings : MonoBehaviour
     {
         public bool stopTime = false;
+        public bool animationLoop = false;
+        public float animationSpeed = 1f;
+
 
         public float droveSpeed = 15.0f;
         public int pathResolution = 100;

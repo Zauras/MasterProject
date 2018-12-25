@@ -6,20 +6,17 @@ using Unity.Transforms;
 using UnityEngine;
 
 namespace Master
-    // TODO: Rotations vec & PH
-    // TODO: Motion frames
-    // TODO: splines
-    // optional : 5pCurve
 {
-    public class MasterEngineSystem : ComponentSystem
+    public class PHcurveSystem : ComponentSystem
     {
         struct Chunks
         {
-            public readonly int Length;
             //public EntityArray entities;
-            public ComponentArray<Transform> T;
-            public ComponentArray<PathMarker> paths;
-            public ComponentArray<LineRenderer> lrs;
+            public readonly int Length;
+            public ComponentArray<Transform> transform;
+            public ComponentArray<MotionData> motion;
+            public ComponentArray<ERFramesData> ERFsData;
+            public ComponentArray<LineRenderer> lineRenderers;
         }
         [Inject] private Chunks _chunks;
 
@@ -37,7 +34,7 @@ namespace Master
         private float4[] TransformArr_toPosF4Arr(Transform[] transArr)
         {
             float4[] posArr = new float4[transArr.Length];
-            for(int i = 0; i < transArr.Length; i++)
+            for (int i = 0; i < transArr.Length; i++)
             {
                 posArr[i] = new float4(transArr[i].position.x, transArr[i].position.y, transArr[i].position.z, 1f);
             }
@@ -77,42 +74,12 @@ namespace Master
             return new float4(cp.x - vecP.x, cp.y - vecP.y, cp.z - vecP.z, 0f);
         }
 
-
-        protected override void OnUpdate()
+        private (FittedMovement, List<EulerRodriguesFrame>) Calc_PH_motion(Transform pathTransform)
         {
-            
-            if (!BootStrap.Settings.stopTime)
-            {
-                 BootStrap.Settings.stopTime = true;
-                // EntityManager em = World.Active.GetOrCreateManager<EntityManager>();
-                for (int pth = 0; pth < _chunks.Length; pth++) // Paths2
-                {
-                    Transform pathTransform = _chunks.T[pth];
-                    byte curveType = _chunks.paths[pth].curveType;
-                    List<float3> pathPoints = null; // = new List<float3>();
+            List<float3> posSpline = new List<float3>();
+            List<float4> rotSpline = new List<float4>();
+            List<EulerRodriguesFrame> ERframes = new List<EulerRodriguesFrame>();
 
-                    //if (curveType == 0)
-                    //{
-                     //   pathPoints = Calc_PH_Curve(pathTransform);
-                        //Debug.Log(pathPoints.Count);
-                   // }
-                    if (curveType == 1)
-                    {
-                        pathPoints = Calc_3Pv2Quat_Curve(pathTransform);
-                    }
-                    else if (curveType == 2)
-                    {
-                        Calc_5PQuat_Curve();
-                    }
-
-                    LineRendererSystem.SetPolygonPoints(_chunks.lrs[pth], pathPoints);
-                }
-            }
-        }
-
-        private List<float3> Calc_PH_Curve(Transform pathTransform)
-        {
-            List<float3> spline = new List<float3>();
             foreach (Transform curveTrans in pathTransform) // Curves
             {
                 if (curveTrans.tag == "Trajectory")
@@ -135,50 +102,37 @@ namespace Master
 
                     quaternion v0 = CalcDistanceQuat(controlData.controlPoints[0].position, controlData.vecPoints[0].position);
                     quaternion v1 = CalcDistanceQuat(controlData.controlPoints[1].position, controlData.vecPoints[1].position);
-                    
-                    spline.AddRange(PHodCurve.FindPHmotion(p0T, p1T, v0, v1).Item1);
-                }
+
+                    // Results:
+                    (List<float3>, List<float4>, List<EulerRodriguesFrame>) PHcurveData =
+                            PHodCurve.FindPHmotion(p0T, p1T, v0, v1); // positions, hodograph, rotations
+
+                    posSpline.AddRange(PHcurveData.Item1); // position
+                    rotSpline.AddRange(PHcurveData.Item2); // rotations
+                    ERframes.AddRange(PHcurveData.Item3);  // EulerRodrigues frames
+                } 
             }
-            return spline;
+            FittedMovement PHmovement = new FittedMovement(posSpline.ToArray(), rotSpline.ToArray());
+            return (PHmovement, ERframes);
         }
 
-
-        private List<float3> Calc_3Pv2Quat_Curve(Transform pathTransform)
+        protected override void OnUpdate()
         {
-            List<float3> spline = new List<float3>();
-            foreach (Transform curveTrans in pathTransform) // Curves
+            if (!BootStrap.Settings.stopTime)
             {
-                if (curveTrans.tag == "Trajectory")
+                BootStrap.Settings.stopTime = true;
+
+                for (int i = 0; i < _chunks.Length; i++) // Paths
                 {
-                    /// DO ALGORITHMIC STUFF:
-                    CPsAndVectors controlData = Extract_CPsAndVec(curveTrans, 3);
-                    // Debug.Log(controlData);
+                    Transform pathTransform = _chunks.transform[i];
+                    var PHmotionData = Calc_PH_motion(pathTransform);
 
-                    LineRendererSystem.SetPolygonPoints(
-                        controlData.vecPoints[0].GetComponent<LineRenderer>(),
-                        new List<float3>() { controlData.controlPoints[0].position, controlData.vecPoints[0].position }
-                        );
-
-                    LineRendererSystem.SetPolygonPoints(
-                        controlData.vecPoints[1].GetComponent<LineRenderer>(),
-                        new List<float3>() { controlData.controlPoints[2].position, controlData.vecPoints[1].position }
-                        );
-
-                    float4 v0 = CalcDistanceFloat4(controlData.controlPoints[0].position, controlData.vecPoints[0].position);
-                    float4 v1 = CalcDistanceFloat4(controlData.controlPoints[1].position, controlData.vecPoints[1].position);
-                    float4[] controlPoints = TransformArr_toPosF4Arr(controlData.controlPoints);
-                    FittedMovement motion = QuatVecCurve.CalcQuatVecCurve(controlPoints, v0, v1);
-                    spline.AddRange(motion.positions);
+                    LineRendererSystem.SetPolygonPoints(_chunks.lineRenderers[i], PHmotionData.Item1.positions);
+                    _chunks.motion[i].movement = PHmotionData.Item1;
+                    _chunks.ERFsData[i].ERframes = PHmotionData.Item2;
                 }
             }
-            return spline;
-        }
-
-        private void Calc_5PQuat_Curve()
-        {
-
         }
 
     }
 }
-

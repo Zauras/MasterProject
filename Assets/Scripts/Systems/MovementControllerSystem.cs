@@ -10,83 +10,141 @@ using UnityEngine.UI;
 
 namespace Master
 {
-  //  [UpdateAfter(typeof(TrajectorySystem))]
+    using H = Master.LibQuaternionAritmetics;
+
+    [UpdateAfter(typeof(PHcurveSystem))]
     public class MovementControllerSystem : ComponentSystem
     {
-        /*
-        struct Travaler
+        private Button StepButton;
+        private Button AnimationButton;
+        private bool animationMove = false;
+
+        struct Chunks
         {
             //Using as a filter & dataEntries (no actual Enteties)
             public readonly int Length;
-            public ComponentDataArray<PathID> pathID;
+            //public ComponentArray<PathID> pathID;
             public ComponentArray<Transform> transform;
-           // [ReadOnly] public TravelerMarker marker;
+            [ReadOnly] public ComponentArray<TravelerData> travelerData;
         }
+        [Inject] Chunks _travelers;
 
-        [Inject] Travaler travelerGroup;
-        */
-        public Button NewGameButton;
-
-
-        /*
-        public static void MovementStep()
+        public void MovementStep()
         {
             EntityManager em = World.Active.GetOrCreateManager<EntityManager>();
-            var dicTrajectory = Database.ObjectMovementPath;
-            var dicTravalers = Database.Travelers;
-            foreach (var travalerEntry in dicTravalers)
+
+            for (int i = 0; i < _travelers.Length; i++) // Travelers
+            {
+                // Fitted Motion:
+                Entity motionEnt = GetEntityFromGOE(_travelers.travelerData[i].motion);
+                MotionData motion = em.GetComponentObject<MotionData>(motionEnt);
+                float3[] positions = motion.movement.positions;
+                float4[] rotations = motion.movement.rotations;
+                // Traveler Data:
+                Transform travelerTransform = _travelers.transform[i];
+               
+
+                if (_travelers.travelerData[i].pathIndex >= positions.Length) // Jei kelio pabaiga
+                {
+                    _travelers.travelerData[i].pathIndex = 0;
+                    travelerTransform.position = positions[0];
+                    travelerTransform.rotation = H.Float4ToQuat(rotations[0]);
+                }
+                else
+                {
+                    travelerTransform.position = positions[_travelers.travelerData[i].pathIndex];
+                    travelerTransform.rotation = H.Float4ToQuat(rotations[_travelers.travelerData[i].pathIndex]);
+                    _travelers.travelerData[i].pathIndex++;
+
+                }
+            }
+            
+        }
+
+        public void AnimatedMotion()
+        {
+            EntityManager em = World.Active.GetOrCreateManager<EntityManager>();
+            //float step = BootStrap.Settings.animationSpeed * Time.deltaTime;
+            //float startTime = Time.realtimeSinceStartup;
+            for (int i = 0; i < _travelers.Length; i++) // Travelers
             {
                 
-                int pathID = travalerEntry.Key;
-                Entity traveler = travalerEntry.Value;
-                int progressCounter = Database.MovementProgress[pathID];
+                // Fitted Motion:
+                Entity motionEnt = GetEntityFromGOE(_travelers.travelerData[i].motion);
+                MotionData motion = em.GetComponentObject<MotionData>(motionEnt);
+                float3[] positions = motion.movement.positions;
+                float4[] rotations = motion.movement.rotations;
 
-                DisplacementData[] trajectory = dicTrajectory[pathID];
+               // Debug.Log(positions.Length + " IR "+ rotations.Length);
 
-                var entTrasnform = em.GetComponentObject<Transform>(traveler);
-                if (progressCounter >= (Database.ObjectMovementPath[pathID].Length-1))
+                //Debug.Log(_travelers.travelerData[i].pathIndex);
+                // Traveler Data:
+                Transform travelerTransform = _travelers.transform[i];
+
+                if (_travelers.travelerData[i].pathIndex == 0) // Jei kelio pradzia
                 {
-                    Database.MovementProgress[pathID] = 0;
-
-                    entTrasnform.position = Database.ObjectMovementPath[pathID][0].position;
-                    entTrasnform.rotation = Database.ObjectMovementPath[pathID][0].rotation;
-                } else
-                {
-                    entTrasnform.position = Database.ObjectMovementPath[pathID][++progressCounter].position;
-                    entTrasnform.rotation = Database.ObjectMovementPath[pathID][++progressCounter].rotation;
-                    Database.MovementProgress[pathID] = progressCounter;
+                    travelerTransform.position = positions[0];
+                    travelerTransform.rotation = H.Float4ToQuat(rotations[0]);
+                    _travelers.travelerData[i].pathIndex++;
                 }
 
-                Debug.Log(progressCounter);
+                if (animationMove)
+                {
+                    float stepPos = BootStrap.Settings.animationSpeed * Time.deltaTime;
+                    float stepRot = BootStrap.Settings.animationSpeed * Time.deltaTime*15f;
+
+                    travelerTransform.position = Vector3.MoveTowards(
+                                                    travelerTransform.position,
+                                                    positions[_travelers.travelerData[i].pathIndex],
+                                                    stepPos);
+
+                    travelerTransform.rotation = Quaternion.Lerp(
+                                                    travelerTransform.rotation,
+                                                    H.Float4ToQuat(rotations[_travelers.travelerData[i].pathIndex]),
+                                                    stepRot);
+
+                    if (H.isEqual(travelerTransform.position, positions[_travelers.travelerData[i].pathIndex]))
+                    {
+                        _travelers.travelerData[i].pathIndex++;
+                    }
+
+                    if (_travelers.travelerData[i].pathIndex >= positions.Length)
+                    {
+                       // animationMove = false;
+                        _travelers.travelerData[i].pathIndex = 0;
+                    }
+                }
             }
-                
         }
-        */
+
+    private static Entity GetEntityFromGOE(GameObjectEntity goe)
+        {
+            return goe.GetComponent<GameObjectEntity>().Entity;
+        }
+
+        public void ToogleAnimation()
+        {
+            animationMove = !animationMove;
+        }
 
         protected override void OnStartRunning()
         {
-           // NewGameButton = GameObject.Find("StepButton").GetComponent<Button>();
+            StepButton = GameObject.Find("StepButton").GetComponent<Button>();
+            StepButton.onClick.AddListener(MovementStep);
+            StepButton.gameObject.SetActive(true);
 
-            //NewGameButton.onClick.AddListener(MovementStep);
+            AnimationButton = GameObject.Find("AnimationButton").GetComponent<Button>();
+            AnimationButton.onClick.AddListener(ToogleAnimation);
+            AnimationButton.gameObject.SetActive(true);
             
-            //NewGameButton.gameObject.SetActive(true);
-           // Debug.Log("SetupButton");
         }
-
 
         protected override void OnUpdate()
         {
-            /*
-            for (int i = 0; i < travelerGroup.Length; i++)
-            {
-                int pathID = travelerGroup.pathID[i].Value;
-                var x = travelerGroup.transform[i].position;
-               // Debug.Log(x);
-                travelerGroup.transform[i].position = Database.ObjectMovementPath[pathID][0];
+            if (animationMove) { AnimatedMotion(); }
 
-            }
-            */
         }
+
     }
 }
 
