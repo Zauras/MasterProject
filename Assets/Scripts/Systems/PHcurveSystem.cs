@@ -12,10 +12,11 @@ namespace Master
         struct Chunks
         {
             //public EntityArray entities;
+            private ComponentArray<PHmotionMarker> markers;
+
             public readonly int Length;
             public ComponentArray<Transform> transform;
             public ComponentArray<MotionData> motion;
-            public ComponentArray<ERFramesData> ERFsData;
             public ComponentArray<LineRenderer> lineRenderers;
         }
         [Inject] private Chunks _chunks;
@@ -74,62 +75,68 @@ namespace Master
             return new float4(cp.x - vecP.x, cp.y - vecP.y, cp.z - vecP.z, 0f);
         }
 
-        private (FittedMovement, List<EulerRodriguesFrame>) Calc_PH_motion(Transform pathTransform)
+        private void SetupVectorsRendering(CPsAndVectors controlData)
+        {
+            LineRendererSystem.SetPolygonPoints(
+                controlData.vecPoints[0].GetComponent<LineRenderer>(),
+                new List<float3>() { controlData.controlPoints[0].position, controlData.vecPoints[0].position }
+                );
+
+            LineRendererSystem.SetPolygonPoints(
+                controlData.vecPoints[1].GetComponent<LineRenderer>(),
+                new List<float3>() { controlData.controlPoints[1].position, controlData.vecPoints[1].position }
+                );
+        }
+
+        private (float3[], quaternion[]) Calc_PH_motion(Transform pathTransform)
         {
             List<float3> posSpline = new List<float3>();
-            List<float4> rotSpline = new List<float4>();
-            List<EulerRodriguesFrame> ERframes = new List<EulerRodriguesFrame>();
+            List<quaternion> rotSpline = new List<quaternion>();
 
             foreach (Transform curveTrans in pathTransform) // Curves
             {
                 if (curveTrans.tag == "Trajectory")
                 {
-                    /// DO ALGORITHMIC STUFF:
+                    /// the Algorithm:
                     CPsAndVectors controlData = Extract_CPsAndVec(curveTrans, 2);
-                    Debug.Log(controlData);
                     Transform p0T = controlData.controlPoints[0];
                     Transform p1T = controlData.controlPoints[1];
+                    SetupVectorsRendering(controlData);
 
-                    LineRendererSystem.SetPolygonPoints(
-                        controlData.vecPoints[0].GetComponent<LineRenderer>(),
-                        new List<float3>() { controlData.controlPoints[0].position, controlData.vecPoints[0].position }
-                        );
-
-                    LineRendererSystem.SetPolygonPoints(
-                        controlData.vecPoints[1].GetComponent<LineRenderer>(),
-                        new List<float3>() { controlData.controlPoints[1].position, controlData.vecPoints[1].position }
-                        );
-
-                    quaternion v0 = CalcDistanceQuat(controlData.controlPoints[0].position, controlData.vecPoints[0].position);
-                    quaternion v1 = CalcDistanceQuat(controlData.controlPoints[1].position, controlData.vecPoints[1].position);
+                    // quaternion v0 = CalcDistanceQuat(controlData.controlPoints[0].position, controlData.vecPoints[0].position);
+                    // quaternion v1 = CalcDistanceQuat(controlData.controlPoints[1].position, controlData.vecPoints[1].position);
+                    quaternion v0 = CalcDistanceQuat( controlData.vecPoints[0].position, controlData.controlPoints[0].position);
+                    quaternion v1 = CalcDistanceQuat( controlData.vecPoints[1].position, controlData.controlPoints[1].position);
 
                     // Results:
-                    (List<float3>, List<float4>, List<EulerRodriguesFrame>) PHcurveData =
-                            PHodCurve.FindPHmotion(p0T, p1T, v0, v1); // positions, hodograph, rotations
+                    (List<float3>, List<quaternion>) PHcurveData =
+                            PHodCurve.FindPHmotion(p0T, p1T, v0, v1); // positions, rotations
 
                     posSpline.AddRange(PHcurveData.Item1); // position
                     rotSpline.AddRange(PHcurveData.Item2); // rotations
-                    ERframes.AddRange(PHcurveData.Item3);  // EulerRodrigues frames
                 } 
             }
-            FittedMovement PHmovement = new FittedMovement(posSpline.ToArray(), rotSpline.ToArray());
-            return (PHmovement, ERframes);
+            return (posSpline.ToArray(), rotSpline.ToArray());
         }
 
         protected override void OnUpdate()
         {
+           
             if (!BootStrap.Settings.stopTime)
             {
-                BootStrap.Settings.stopTime = true;
+                
+                // BootStrap.Settings.stopTime = true;
 
                 for (int i = 0; i < _chunks.Length; i++) // Paths
                 {
                     Transform pathTransform = _chunks.transform[i];
-                    var PHmotionData = Calc_PH_motion(pathTransform);
-
-                    LineRendererSystem.SetPolygonPoints(_chunks.lineRenderers[i], PHmotionData.Item1.positions);
-                    _chunks.motion[i].movement = PHmotionData.Item1;
-                    _chunks.ERFsData[i].ERframes = PHmotionData.Item2;
+                    (float3[], quaternion[]) PHmotion = Calc_PH_motion(pathTransform);
+                    Debug.Log("trolis");
+                    LineRendererSystem.SetPolygonPoints(_chunks.lineRenderers[i], PHmotion.Item1);
+                    
+                    _chunks.motion[i].positions = PHmotion.Item1;
+                    _chunks.motion[i].rotations = PHmotion.Item2;
+                    Debug.Log("paF");
                 }
             }
         }

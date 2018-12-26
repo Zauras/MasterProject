@@ -11,6 +11,8 @@ namespace Master {
         public bool animationLoop = false;
         public float animationSpeed = 1f;
 
+        public float ERFheight = 1f;
+
 
         public float droveSpeed = 15.0f;
         public int pathResolution = 100;

@@ -29,6 +29,7 @@ namespace Master
         }
         [Inject] Chunks _travelers;
 
+
         public void MovementStep()
         {
             EntityManager em = World.Active.GetOrCreateManager<EntityManager>();
@@ -38,8 +39,8 @@ namespace Master
                 // Fitted Motion:
                 Entity motionEnt = GetEntityFromGOE(_travelers.travelerData[i].motion);
                 MotionData motion = em.GetComponentObject<MotionData>(motionEnt);
-                float3[] positions = motion.movement.positions;
-                float4[] rotations = motion.movement.rotations;
+                float3[] positions = motion.positions;
+                quaternion[] rotations = motion.rotations;
                 // Traveler Data:
                 Transform travelerTransform = _travelers.transform[i];
                
@@ -48,17 +49,15 @@ namespace Master
                 {
                     _travelers.travelerData[i].pathIndex = 0;
                     travelerTransform.position = positions[0];
-                    travelerTransform.rotation = H.Float4ToQuat(rotations[0]);
+                    travelerTransform.rotation = rotations[0];
                 }
                 else
                 {
                     travelerTransform.position = positions[_travelers.travelerData[i].pathIndex];
-                    travelerTransform.rotation = H.Float4ToQuat(rotations[_travelers.travelerData[i].pathIndex]);
+                    travelerTransform.rotation = rotations[_travelers.travelerData[i].pathIndex];
                     _travelers.travelerData[i].pathIndex++;
-
                 }
             }
-            
         }
 
         public void AnimatedMotion()
@@ -72,8 +71,8 @@ namespace Master
                 // Fitted Motion:
                 Entity motionEnt = GetEntityFromGOE(_travelers.travelerData[i].motion);
                 MotionData motion = em.GetComponentObject<MotionData>(motionEnt);
-                float3[] positions = motion.movement.positions;
-                float4[] rotations = motion.movement.rotations;
+                float3[] positions = motion.positions;
+                quaternion[] rotations = motion.rotations;
 
                // Debug.Log(positions.Length + " IR "+ rotations.Length);
 
@@ -84,7 +83,7 @@ namespace Master
                 if (_travelers.travelerData[i].pathIndex == 0) // Jei kelio pradzia
                 {
                     travelerTransform.position = positions[0];
-                    travelerTransform.rotation = H.Float4ToQuat(rotations[0]);
+                    travelerTransform.rotation = rotations[0];
                     _travelers.travelerData[i].pathIndex++;
                 }
 
@@ -100,7 +99,7 @@ namespace Master
 
                     travelerTransform.rotation = Quaternion.Lerp(
                                                     travelerTransform.rotation,
-                                                    H.Float4ToQuat(rotations[_travelers.travelerData[i].pathIndex]),
+                                                    rotations[_travelers.travelerData[i].pathIndex],
                                                     stepRot);
 
                     if (H.isEqual(travelerTransform.position, positions[_travelers.travelerData[i].pathIndex]))

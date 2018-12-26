@@ -9,8 +9,9 @@ using UnityEngine.UI;
 
 namespace Master
 {
-    public class ERFramesData : MonoBehaviour
+    public class PathERFs : MonoBehaviour
     {
-        public List<EulerRodriguesFrame> ERframes;
+        public GameObject[] holders;
+        //public List<EulerRodriguesFrame> ERframes;
     }
 }

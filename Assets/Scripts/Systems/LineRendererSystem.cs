@@ -66,10 +66,12 @@ namespace Master
         }
 
         public static void SetPolygonPoints(LineRenderer lineRenderer, List<float3> pointList)
-        {         
+        {
+            Debug.Log(pointList.Count);
             lineRenderer.positionCount = pointList.Count;
             for (int i = 0; i < pointList.Count; i++)
             {
+                Debug.Log(pointList[i]);
                 lineRenderer.SetPosition(i, pointList[i]);
             }
         }

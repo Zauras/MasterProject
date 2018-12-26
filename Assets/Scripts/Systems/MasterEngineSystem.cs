@@ -80,7 +80,7 @@ namespace Master
 
         protected override void OnUpdate()
         {
-            
+            /*
             if (!BootStrap.Settings.stopTime)
             {
                  BootStrap.Settings.stopTime = true;
@@ -108,6 +108,7 @@ namespace Master
                     LineRendererSystem.SetPolygonPoints(_chunks.lrs[pth], pathPoints);
                 }
             }
+            */
         }
 
         private List<float3> Calc_PH_Curve(Transform pathTransform)

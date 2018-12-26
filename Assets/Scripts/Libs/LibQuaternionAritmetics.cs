@@ -202,6 +202,20 @@ namespace Master
 			return new float4 (xNeg, yNeg, zNeg, quaternion.w);
 		}
 
+        public static quaternion Conj(quaternion quaternion)
+        {
+            float xNeg = quaternion.value.x * (-1.0f);
+            float yNeg = quaternion.value.y * (-1.0f);
+            float zNeg = quaternion.value.z * (-1.0f);
+            return new quaternion(xNeg, yNeg, zNeg, quaternion.value.w);
+        }
+
+        public static quaternion DivQuatFromConst(quaternion q, float c)
+        {
+            return new quaternion(q.value.x / c, q.value.y / c, q.value.z / c, q.value.w / c);
+        }
+
+
         public static float4 Abs(float4 quaternion)
         {
 			float xx = math.sqrt (quaternion.x * quaternion.x);
@@ -277,6 +291,11 @@ namespace Master
 
         public static float3 Float4ToFloat3(float4 vec4){
             return new float3(vec4.x, vec4.y, vec4.z);
+        }
+
+        public static float3 QuatToFloat3(quaternion q)
+        {
+            return new float3(q.value.x, q.value.y, q.value.z);
         }
 
         public static float4 TransformToQWYZ(float4 vec4)

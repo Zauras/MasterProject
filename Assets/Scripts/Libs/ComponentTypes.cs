@@ -157,15 +157,12 @@ namespace Master
 
     public struct EulerRodriguesFrame
     {
-        public EulerRodriguesFrame(float3 ERFx, float3 ERFy, float3 ERFz) : this()
+        public EulerRodriguesFrame(float3 vecX, float3 vecY, float3 vecZ) : this()
         {
-            this.ERFx = ERFx;
-            this.ERFy = ERFy;
-            this.ERFz = ERFz;
+            this.vecX = vecX; this.vecY = vecY; this.vecZ = vecZ;
         }
-        public float3 ERFx;
-        public float3 ERFy;
-        public float3 ERFz;
+
+        public float3 vecX, vecY, vecZ;
     }
 
 
