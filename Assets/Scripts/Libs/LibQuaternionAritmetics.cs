@@ -22,6 +22,8 @@ namespace Master
     {
         public static LibQuaternionAritmetics H;
 
+        public static float4 one = new float4(0f, 0f, 0f, 1f);
+
         public static quaternion ii = new quaternion(1f, 0f, 0f, 0f); // x, y, z, w
         public static quaternion jj = new quaternion(0f, 1f, 0f, 0f);
         public static quaternion kk = new quaternion(0f, 0f, 1f, 0f);

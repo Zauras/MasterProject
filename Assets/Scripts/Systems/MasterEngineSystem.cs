@@ -137,7 +137,7 @@ namespace Master
                     quaternion v0 = CalcDistanceQuat(controlData.controlPoints[0].position, controlData.vecPoints[0].position);
                     quaternion v1 = CalcDistanceQuat(controlData.controlPoints[1].position, controlData.vecPoints[1].position);
                     
-                    spline.AddRange(PHodCurve.FindPHmotion(p0T, p1T, v0, v1).Item1);
+                    //spline.AddRange(PHodCurve.FindPHmotion(p0T, p1T, v0, v1).Item1);
                 }
             }
             return spline;

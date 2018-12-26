@@ -15,7 +15,7 @@ namespace Master
         struct PathChunks
         {
             public readonly int Length;
-            public ComponentArray<PathMarker> paths;
+            public ComponentArray<MotionData> paths;
             public ComponentArray<LineRenderer> lrs;
         }
         [Inject] private PathChunks _pathChunks;

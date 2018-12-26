@@ -18,44 +18,69 @@ namespace Master {
 
     public sealed class PHodCurve
     {
-        public static (List<float3>, List<quaternion>) FindPHmotion(Transform pT0, Transform pT1,
-                                                                quaternion v0, quaternion v1)
+        //##### API ##############################################################################
+
+        /// IF: Spline begining || Independent Curve
+        public static (List<float3>, List<quaternion>) FindPHCmotion(Transform pT0, Transform pT1,
+                                                                      quaternion v0, quaternion v1)
         {
-            // dummy data beg
-            /*
-             v0 = new quaternion(3f, 4f, 1f, 0f);
-             v1 = new quaternion(2f, 2f, 0f, 0f);
-             var postumis = new float3(1f, 2f, -2f);
-             pT0.position = new float3(0f,0f,0f) + postumis;
-             pT1.position = new float3(0.6f, 0.8f, 0.5f) + postumis;
-             */
-            // dummy data end
+            float4 q0 = FindEndPointRotations(v0, Mathf.PI / 8f);
+            float4 q1 = FindEndPointRotations(v1, Mathf.PI / 8f);
+            pT0.rotation = H.Float4ToQuat(q0);
+            pT1.rotation = H.Float4ToQuat(q1);
 
-            (float4, float4) rotations = FindEndPointRotations(v0, v1);
-            pT0.rotation = H.Float4ToQuat(rotations.Item1);
-            pT1.rotation = H.Float4ToQuat(rotations.Item2);
-
-            (List<float3>, List<quaternion>) movementData 
-                = PHCalgorithm(pT0.position, pT1.position, rotations.Item1, rotations.Item2);
+            (List<float3>, List<quaternion>) movementData = CalcPHcurveMotion(pT0.position, q0,
+                                                                               pT1.position, q1);
             return movementData;
         }
 
-        private struct Rotations
+        /// IF: Spline Middleware || OpenSpline Ending
+        public static (List<float3>, List<quaternion>) FindPHCmotion(Transform pT0, 
+                                                                      Transform pT1, 
+                                                                      quaternion v1  )
         {
-            public Rotations(float4 q0, float4 q1) : this() { this.q0 = q0; this.q1 = q1; }
-            public float4 q0, q1;
+            float4 q1 = FindEndPointRotations(v1, Mathf.PI / 8f);
+            pT1.rotation = H.Float4ToQuat(q1);
+
+            (List<float3>, List<quaternion>) movementData = CalcPHcurveMotion(
+                                        pT0.position, H.QuatToFloat4(pT0.rotation), 
+                                         pT1.position, q1);
+            return movementData;
+        }
+
+        /// IF: ClosedSpline Ending
+        public static (List<float3>, List<quaternion>) FindPHCmotion(Transform pT0, Transform pT1)
+        {
+            (List<float3>, List<quaternion>) movementData = CalcPHcurveMotion(
+                                        pT0.position, H.QuatToFloat4(pT0.rotation),
+                                         pT1.position, H.QuatToFloat4(pT1.rotation));
+            return movementData;
+        }
+
+        //##### Private Methods ##############################################################################
+        private static float4 FindEndPointRotations(quaternion vec, float t)
+        {
+            float4 F01 = H.QuatToFloat4(m.normalizesafe(vec)); // ERFrame x axis (tangent)
+
+            float4 oq1 = H.one - H.Mult(F01, H.iif);
+            float4 oq2 = F01 + H.iif;
+            float io1 = m.sqrt(H.QuatLength(oq1));
+            float io2 = m.sqrt(H.QuatLength(oq2));
+
+            float4 nq1 = oq1 / io1;
+            float4 nq2 = oq2 / io2;
+
+            return GetQuatOnSphere(nq1, nq2, t);
         }
 
         private static (float4, float4) FindEndPointRotations(quaternion v0, quaternion v1)
         {
             //two frames of p0 & p1:
-            quaternion F01h = m.normalizesafe(v0);
-            float4 F01 = H.QuatToFloat4(F01h);
+            float4 F01 = H.QuatToFloat4(m.normalizesafe(v0));
             //quaternion F02h = m.normalizesafe(new quaternion(-F01h.value.y, F01h.value.x, 0f, 0f));
             //quaternion F03h = H.Mult(F01h, F02h);
 
-            quaternion F11h = m.normalizesafe(v1);
-            float4 F11 = H.QuatToFloat4(F11h);
+            float4 F11 = H.QuatToFloat4(m.normalizesafe(v1));
             //quaternion F12 = m.normalizesafe(new quaternion(-F11.value.y, F11.value.x, 0f, 0f));
             //quaternion F13 = H.Mult(F11, F12);
 
@@ -78,7 +103,7 @@ namespace Master {
             float4 nq3 = oq3 / io3;
             float4 nq4 = oq4 / io4;
 
-            float t1 = Mathf.PI / 8f;
+            float t1 = Mathf.PI / 12f;
             float t2 = -1f*Mathf.PI / 8f;
             float4 q0 = GetQuatOnSphere(nq1, nq2, t1);
             float4 q1 = GetQuatOnSphere(nq3, nq4, t2);
@@ -137,8 +162,8 @@ namespace Master {
             return -0.5f * bb + H.Mult(Y, qphi);
         }
 
-        private static (List<float3>, List<quaternion>) PHCalgorithm (
-                float3 point0, float3 point1, float4 q0, float4 q1)
+        private static (List<float3>, List<quaternion>) CalcPHcurveMotion (
+                float3 point0, float4 q0, float3 point1, float4 q1)
         {
             float4 p0 = new float4(point0, 0f);
             float4 p1 = new float4(point1, 0f);
