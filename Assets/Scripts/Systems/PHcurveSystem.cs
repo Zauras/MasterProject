@@ -88,13 +88,17 @@ namespace Master
                 );
         }
 
+
         private (float3[], quaternion[]) Calc_PH_motion(Transform pathTransform)
         {
+            
             List<float3> posSpline = new List<float3>();
             List<quaternion> rotSpline = new List<quaternion>();
 
             foreach (Transform curveTrans in pathTransform) // Curves
-            {
+            {   if (curveTrans.name == "ERFholder") break;
+
+                //Debug.Log(curveTrans.name);
                 if (curveTrans.tag == "Trajectory")
                 {
                     /// the Algorithm:
@@ -103,8 +107,8 @@ namespace Master
                     Transform p1T = controlData.controlPoints[1];
                     SetupVectorsRendering(controlData);
 
-                    // quaternion v0 = CalcDistanceQuat(controlData.controlPoints[0].position, controlData.vecPoints[0].position);
-                    // quaternion v1 = CalcDistanceQuat(controlData.controlPoints[1].position, controlData.vecPoints[1].position);
+                    //quaternion v0 = CalcDistanceQuat(controlData.controlPoints[0].position, controlData.vecPoints[0].position);
+                    //quaternion v1 = CalcDistanceQuat(controlData.controlPoints[1].position, controlData.vecPoints[1].position);
                     quaternion v0 = CalcDistanceQuat( controlData.vecPoints[0].position, controlData.controlPoints[0].position);
                     quaternion v1 = CalcDistanceQuat( controlData.vecPoints[1].position, controlData.controlPoints[1].position);
 
@@ -125,18 +129,16 @@ namespace Master
             if (!BootStrap.Settings.stopTime)
             {
                 
-                // BootStrap.Settings.stopTime = true;
+                 //BootStrap.Settings.stopTime = true;
 
                 for (int i = 0; i < _chunks.Length; i++) // Paths
                 {
                     Transform pathTransform = _chunks.transform[i];
                     (float3[], quaternion[]) PHmotion = Calc_PH_motion(pathTransform);
-                    Debug.Log("trolis");
                     LineRendererSystem.SetPolygonPoints(_chunks.lineRenderers[i], PHmotion.Item1);
                     
                     _chunks.motion[i].positions = PHmotion.Item1;
                     _chunks.motion[i].rotations = PHmotion.Item2;
-                    Debug.Log("paF");
                 }
             }
         }

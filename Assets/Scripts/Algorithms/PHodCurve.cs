@@ -31,12 +31,12 @@ namespace Master {
              */
             // dummy data end
 
-            Rotations rotations = FindEndPointRotations(v0, v1);
-            pT0.rotation = H.Float4ToQuat(rotations.q0);
-            pT1.rotation = H.Float4ToQuat(rotations.q1);
+            (float4, float4) rotations = FindEndPointRotations(v0, v1);
+            pT0.rotation = H.Float4ToQuat(rotations.Item1);
+            pT1.rotation = H.Float4ToQuat(rotations.Item2);
 
             (List<float3>, List<quaternion>) movementData 
-                = PHCalgorithm(pT0.position, pT1.position, rotations.q0, rotations.q1);
+                = PHCalgorithm(pT0.position, pT1.position, rotations.Item1, rotations.Item2);
             return movementData;
         }
 
@@ -46,7 +46,7 @@ namespace Master {
             public float4 q0, q1;
         }
 
-        private static Rotations FindEndPointRotations(quaternion v0, quaternion v1)
+        private static (float4, float4) FindEndPointRotations(quaternion v0, quaternion v1)
         {
             //two frames of p0 & p1:
             quaternion F01h = m.normalizesafe(v0);
@@ -78,12 +78,12 @@ namespace Master {
             float4 nq3 = oq3 / io3;
             float4 nq4 = oq4 / io4;
 
-            float t1 = Mathf.PI / 12f;
+            float t1 = Mathf.PI / 8f;
             float t2 = -1f*Mathf.PI / 8f;
             float4 q0 = GetQuatOnSphere(nq1, nq2, t1);
             float4 q1 = GetQuatOnSphere(nq3, nq4, t2);
 
-            return new Rotations(q0, q1);
+            return (q0, q1);
         }
 
         private static float4 GetQuatOnSphere(float4 nqBeg, float4 nqEnd, float t)
@@ -172,7 +172,8 @@ namespace Master {
 
             for (int i = 0; i <= rez; i++)
             {
-                float timeDelta = -1f * (time - 1f);
+                //float timeDelta = time - 1f;
+                float timeDelta = 1f - time;
 
                 // float3 hodPoint = FindHodographPoint(time, timeDelta, bezPoints); //hodograph point (hod(t))
                 quaternion rotation = FindRotation(time, timeDelta, rotationPolynomial); //rotations (aa in maple, in text A(t))

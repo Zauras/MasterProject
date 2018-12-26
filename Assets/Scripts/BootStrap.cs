@@ -26,7 +26,7 @@ namespace Master
         public static void InitializeAfterSceneLoad()
         {   
             // Don't touch - just init Settings GameObject
-            Debug.Log("1. BootStrap: InitializeAfterSceneLoad()");
+            //Debug.Log("1. BootStrap: InitializeAfterSceneLoad()");
 
             var settingsGO = GameObject.Find("Settings");
             if (settingsGO == null)
@@ -39,7 +39,7 @@ namespace Master
 
         public static void InitializeWithScene()
         {
-            Debug.Log("2. BootStrap: InitializeWithScene()");
+            //Debug.Log("2. BootStrap: InitializeWithScene()");
             // Don't touch - just init Settings GameObject
             EntityManager em = World.Active.GetOrCreateManager<EntityManager>();
 

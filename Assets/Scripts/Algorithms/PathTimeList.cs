@@ -17,7 +17,6 @@ namespace Master {
 
         public static void CreateTimeList()
         {
-            Debug.Log("3. CalculateTimeListSystem: Skaiciuojam TimeList");
             TList = BootStrap.Settings.TList;
             rez = BootStrap.Settings.pathResolution;
 
