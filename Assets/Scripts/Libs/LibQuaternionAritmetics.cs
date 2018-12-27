@@ -168,6 +168,24 @@ namespace Master
 			return new float4 (x, y, z, w);
 		}
 
+        public static float4 Mult(float3 a, float4 b)
+        {
+            float w = (0f - b.x * a.x - b.y * a.y - b.z * a.z);
+            float x = (b.w * a.x - b.y * a.z + b.z * a.y);
+            float y = (b.w * a.y + b.x * a.z - b.z * a.x);
+            float z = (b.w * a.z - b.x * a.y + b.y * a.x);
+            return new float4(x, y, z, w);
+        }
+
+        public static float4 Mult(float3 a, float3 b)
+        {
+            float w = (0f - b.x * a.x - b.y * a.y - b.z * a.z);
+            float x = (0f - b.y * a.z + b.z * a.y);
+            float y = ( b.x * a.z + 0 - b.z * a.x);
+            float z = (0f - b.x * a.y + b.y * a.x);
+            return new float4(x, y, z, w);
+        }
+
         public static quaternion Mult(quaternion a, quaternion b)
         {
             float w = (b.value.w * a.value.w - b.value.x * a.value.x - b.value.y * a.value.y - b.value.z * a.value.z);
@@ -246,9 +264,20 @@ namespace Master
 			return new float4(-1.0f*q.x/n, -1.0f*q.y/n, -1.0f*q.z/n, q.w/n);
 		}
 
+        public static float3 Invers(float3 q)
+        { // Quaternion Invers
+            float n = PureQuatLength(q);
+            return new float3(-1.0f * q.x / n, -1.0f * q.y / n, -1.0f * q.z / n);
+        }
+
         public static float QuatLength(float4 q)
         { // Quaternion Length
             return q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
+        }
+
+        public static float PureQuatLength(float3 q)
+        { // Quaternion Length
+            return q.x * q.x + q.y * q.y + q.z * q.z;
         }
 
         public static float QuatLength(quaternion q)
@@ -293,6 +322,11 @@ namespace Master
 
         public static float3 Float4ToFloat3(float4 vec4){
             return new float3(vec4.x, vec4.y, vec4.z);
+        }
+
+        public static float4 Float3ToFloat4(float3 vec3)
+        {
+            return new float4(vec3.x, vec3.y, vec3.z, 0f);
         }
 
         public static float3 QuatToFloat3(quaternion q)

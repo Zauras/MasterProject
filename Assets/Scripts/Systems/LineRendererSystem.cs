@@ -83,6 +83,13 @@ namespace Master
             }
         }
 
+        public static void SetLinePoints(LineRenderer lineRenderer, float3 pBeg, float3 pEnd)
+        {
+            lineRenderer.positionCount = 2;
+            lineRenderer.SetPosition(0, pBeg);
+            lineRenderer.SetPosition(1, pEnd);
+        }
+
         protected override void OnUpdate() { }
     }
 }

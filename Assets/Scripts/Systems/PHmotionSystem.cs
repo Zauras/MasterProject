@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Master
 {
-    public class PHcurveSystem : ComponentSystem
+    public class PHmotionSystem : ComponentSystem
     {
         struct Chunks
         {
@@ -15,11 +15,11 @@ namespace Master
             private ComponentArray<PHmotionMarker> markers;
 
             public readonly int Length;
-            public ComponentArray<Transform> transform;
-            public ComponentArray<MotionData> motion;
+            public ComponentArray<Transform> transforms;
+            public ComponentArray<MotionData> motions;
             public ComponentArray<LineRenderer> lineRenderers;
         }
-        [Inject] private Chunks _chunks;
+        [Inject] private Chunks _paths;
 
         struct CPsAndVectors
         {
@@ -88,15 +88,12 @@ namespace Master
                 );
         }
 
-
         private void AddToSpline(List<float3> posSpline, List<quaternion> rotSpline,
                                  (List<float3>, List<quaternion>) curveData)
         {
             posSpline.AddRange(curveData.Item1); // position
             rotSpline.AddRange(curveData.Item2); // rotations
         }
-
-
 
 
         private (float3[], quaternion[]) Calc_PH_motion(Transform pT, bool isClosedSpline, int curveCount)
@@ -116,13 +113,20 @@ namespace Master
                     currCP = pT.GetChild(cp);
                     cp += 2; // To skip vecPoint index
 
-                    quaternion vH0 = CalcDistanceQuat(pT.GetChild(vp).position, firstCP.position);
+                    Transform vec0 = pT.GetChild(vp);
+                    quaternion vH0 = CalcDistanceQuat(vec0.position, firstCP.position);
+                    LineRendererSystem.SetLinePoints(vec0.GetComponent<LineRenderer>(),
+                                                      firstCP.position, vec0.position);
                     vp += 2; // To skip controlPoint index
+
+                    Transform vec1 = pT.GetChild(vp);
                     quaternion vH1 = CalcDistanceQuat(pT.GetChild(vp).position, currCP.position);
+                    LineRendererSystem.SetLinePoints(vec1.GetComponent<LineRenderer>(),
+                                                      currCP.position, vec1.position);
                     vp += 2; // To skip controlPoint index
 
                     (List<float3>, List<quaternion>) PHcurveData =
-                        PHodCurve.FindPHCmotion(firstCP, currCP, vH0, vH1); // positions, rotations
+                        PHodCurve.FindPHcMotion(firstCP, currCP, vH0, vH1); // positions, rotations
 
                     AddToSpline(posSpline, rotSpline, PHcurveData);
                 }
@@ -130,7 +134,7 @@ namespace Master
                 else if (c == curveCount-1 && isClosedSpline) // Closed Splane End
                 {
                     (List<float3>, List<quaternion>) PHcurveData =
-                        PHodCurve.FindPHCmotion(currCP, firstCP); // positions, rotations
+                        PHodCurve.FindPHcMotion(currCP, firstCP); // positions, rotations
 
                     AddToSpline(posSpline, rotSpline, PHcurveData);
                 }
@@ -140,11 +144,14 @@ namespace Master
                     Transform nextCP = pT.GetChild(cp);
                     cp += 2; // To skip vecPoint index
 
-                    quaternion vH1 = CalcDistanceQuat(pT.GetChild(vp).position, nextCP.position);
+                    Transform vec1 = pT.GetChild(vp);
+                    quaternion vH1 = CalcDistanceQuat(vec1.position, nextCP.position);
+                    LineRendererSystem.SetLinePoints(vec1.GetComponent<LineRenderer>(),
+                                                      nextCP.position, vec1.position);
                     vp += 2; // To skip controlPoint index
 
                     (List<float3>, List<quaternion>) PHcurveData =
-                        PHodCurve.FindPHCmotion(currCP, nextCP, vH1); // positions, rotations
+                        PHodCurve.FindPHcMotion(currCP, nextCP, vH1); // positions, rotations
                     currCP = nextCP;
 
                     AddToSpline(posSpline, rotSpline, PHcurveData);
@@ -156,21 +163,18 @@ namespace Master
 
         protected override void OnUpdate()
         {
-           
             if (!BootStrap.Settings.stopTime)
             {
-                
                  //BootStrap.Settings.stopTime = true;
-
-                for (int i = 0; i < _chunks.Length; i++) // Paths
+                for (int i = 0; i < _paths.Length; i++) // Paths
                 {
-                    Transform pathTransform = _chunks.transform[i];
+                    Transform pathTransform = _paths.transforms[i];
                     (float3[], quaternion[]) PHmotion = Calc_PH_motion(pathTransform,
-                                                                       _chunks.motion[i].isClosedSpline,
-                                                                       _chunks.motion[i].curveCount);
-                    _chunks.motion[i].positions = PHmotion.Item1;
-                    _chunks.motion[i].rotations = PHmotion.Item2;
-                    LineRendererSystem.SetPolygonPoints(_chunks.lineRenderers[i], PHmotion.Item1);
+                                                                       _paths.motions[i].isClosedSpline,
+                                                                       _paths.motions[i].curveCount);
+                    _paths.motions[i].positions = PHmotion.Item1;
+                    _paths.motions[i].rotations = PHmotion.Item2;
+                    LineRendererSystem.SetPolygonPoints(_paths.lineRenderers[i], PHmotion.Item1);
                 }
             }
         }

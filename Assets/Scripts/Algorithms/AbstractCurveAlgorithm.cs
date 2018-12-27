@@ -14,17 +14,24 @@ namespace Master
             return iPoint - jPoint;
         }
 
-        public static float4 GenerateWeight(float kof11, float kof12, float kof21, float kof22,
-                                 float4 delta1, float4 delta2, float4 delta3, float4 delta4,
-                                  float4 delta5, float4 delta6, float4 delta7, float4 delta8)
+        public static float3 GetDelta(float3 iPoint, float3 jPoint)
         {
-            float4 invDelta1 = H.Invers(delta1);
-            float4 invDelta3 = H.Invers(delta3);
-            float4 invDelta5 = H.Invers(delta5);
-            float4 invDelta7 = H.Invers(delta7);
+            return iPoint - jPoint;
+        }
 
-            float4 firstPart = kof11 * H.Mult(invDelta1, delta2) + kof12 * H.Mult(invDelta3, delta4);
-            float4 secPart = kof21 * H.Mult(invDelta5, delta6) + kof22 * H.Mult(invDelta7, delta8);
+        public static float4 GenerateWeight(float kof11, float kof12, float kof21, float kof22,
+                                 float3 delta1, float3 delta2, float3 delta3, float3 delta4,
+                                  float3 delta5, float3 delta6, float3 delta7, float3 delta8)
+        {
+            float3 invDelta1 = H.Invers(delta1);
+            float3 invDelta3 = H.Invers(delta3);
+            float3 invDelta5 = H.Invers(delta5);
+            float3 invDelta7 = H.Invers(delta7);
+
+            float4 firstPart = kof11 * H.Mult(invDelta1, delta2) 
+                               + kof12 * H.Mult(invDelta3, delta4);
+            float4 secPart = kof21 * H.Mult(invDelta5, delta6)
+                               + kof22 * H.Mult(invDelta7, delta8);
 
             float4 weight = H.Mult(H.Invers(firstPart), secPart);
             //weight = H.Mult(weight, weights[0]);
@@ -50,13 +57,13 @@ namespace Master
             return fList;
         }
 
-        public static FittedMovement GenerateCurve(float4[] points, float4[] weights)
+        public static (List<float3>, List<quaternion>) GenerateCurve(float3[] points, float4[] weights)
         {
             float[] timePath = PathTimeList.timePath;
 
             //DualQuaternion[] cDHarr = new DualQuaternion[timePath.Length];
-            float3[] positions = new float3[timePath.Length];
-            float4[] rotations = new float4[timePath.Length];
+            List<float3> positions = new List<float3>();
+            List<quaternion> rotations = new List<quaternion>();
 
             // qt-pwf(t); pt-wf(t);
             // Visis C(t) bus Img(H)
@@ -72,21 +79,18 @@ namespace Master
                 for (int i = 0; i < BootStrap.Settings.TList.Length; i++)
                 {
                     //t yra rezoliucijos delta step
-                    if (points.Length == 5)
+                    if (points.Length == 5) {
                         Ft += H.Mult(points[i * 2], weights[i]) * fiList[i];
-                    else Ft += H.Mult(points[i], weights[i]) * fiList[i];
+                    } else {
+                        Ft += H.Mult(points[i], weights[i]) * fiList[i];
+                    }
                     Wt += weights[i] * fiList[i];
                 }
                 // Debug.Log(Wt +" ... "+ Ft);
-                //cDHarr[t] = new DualQuaternion(Wt, Ft); // Movement & Rotation Quaternions
-                float4 displacementPosition = H.Mult(Ft, H.Invers(Wt));
-                positions[t] = H.Float4ToFloat3(H.Mult(Ft, H.Invers(Wt))); // Movement
-                rotations[t] = Ft; // Rotation
-
-                // float4 curvePoint= H.Mult(Ft, H.Invers(Wt)); // making path of movement
-                // curve[t] = new float3(curvePoint.x, curvePoint.y, curvePoint.z);
+                positions.Add( H.Float4ToFloat3(H.Mult(Ft, H.Invers(Wt)))); // Movement
+                rotations.Add( H.Float4ToQuat(Ft) ); // Rotation
             }
-            return new FittedMovement(positions, rotations);
+            return (positions, rotations);
         }
 
     }

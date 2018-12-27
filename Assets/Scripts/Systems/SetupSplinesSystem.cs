@@ -62,6 +62,13 @@ namespace Master
                                                           _phs.motions[i].isClosedSpline);
 
             }
+           
+            for (int i = 0; i < _irs.Length; i++)
+            {
+                _irs.motions[i].curveCount = CountCurves(_irs.transforms[i],
+                                                          _irs.markers[i].TYPE,
+                                                          _irs.motions[i].isClosedSpline);
+            }
         }
 
         protected override void OnUpdate() { }

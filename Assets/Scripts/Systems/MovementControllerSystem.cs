@@ -12,7 +12,8 @@ namespace Master
 {
     using H = Master.LibQuaternionAritmetics;
 
-    [UpdateAfter(typeof(PHcurveSystem))]
+    [UpdateAfter(typeof(PHmotionSystem))]
+    [UpdateAfter(typeof(IRmotionSystem))]
     public class MovementControllerSystem : ComponentSystem
     {
         private Button StepButton;
@@ -67,51 +68,54 @@ namespace Master
             //float startTime = Time.realtimeSinceStartup;
             for (int i = 0; i < _travelers.Length; i++) // Travelers
             {
-                
                 // Fitted Motion:
-                Entity motionEnt = GetEntityFromGOE(_travelers.travelerData[i].motion);
-                MotionData motion = em.GetComponentObject<MotionData>(motionEnt);
-                float3[] positions = motion.positions;
-                quaternion[] rotations = motion.rotations;
-
-               // Debug.Log(positions.Length + " IR "+ rotations.Length);
-
-                //Debug.Log(_travelers.travelerData[i].pathIndex);
-                // Traveler Data:
-                Transform travelerTransform = _travelers.transform[i];
-
-                if (_travelers.travelerData[i].pathIndex == 0) // Jei kelio pradzia
+                if (em.Exists(_travelers.travelerData[i].motion.Entity))
                 {
-                    travelerTransform.position = positions[0];
-                    travelerTransform.rotation = rotations[0];
-                    _travelers.travelerData[i].pathIndex++;
-                }
+                    Entity motionEnt = GetEntityFromGOE(_travelers.travelerData[i].motion);
+                    MotionData motion = em.GetComponentObject<MotionData>(motionEnt);
+                    float3[] positions = motion.positions;
+                    quaternion[] rotations = motion.rotations;
 
-                if (animationMove)
-                {
-                    float stepPos = BootStrap.Settings.animationSpeed * Time.deltaTime;
-                    float stepRot = BootStrap.Settings.animationSpeed * Time.deltaTime*15f;
+                    // Debug.Log(positions.Length + " IR "+ rotations.Length);
 
-                    travelerTransform.position = Vector3.MoveTowards(
-                                                    travelerTransform.position,
-                                                    positions[_travelers.travelerData[i].pathIndex],
-                                                    stepPos);
+                    //Debug.Log(_travelers.travelerData[i].pathIndex);
+                    // Traveler Data:
+                    Transform travelerTransform = _travelers.transform[i];
 
-                    travelerTransform.rotation = Quaternion.Lerp(
-                                                    travelerTransform.rotation,
-                                                    rotations[_travelers.travelerData[i].pathIndex],
-                                                    stepRot);
-
-                    if (H.isEqual(travelerTransform.position, positions[_travelers.travelerData[i].pathIndex]))
+                    if (_travelers.travelerData[i].pathIndex == 0) // Jei kelio pradzia
                     {
+                        travelerTransform.position = positions[0];
+                        travelerTransform.rotation = rotations[0];
                         _travelers.travelerData[i].pathIndex++;
                     }
 
-                    if (_travelers.travelerData[i].pathIndex >= positions.Length)
+                    if (animationMove)
                     {
-                       // animationMove = false;
-                        _travelers.travelerData[i].pathIndex = 0;
+                        float stepPos = BootStrap.Settings.animationSpeed * Time.deltaTime;
+                        float stepRot = BootStrap.Settings.animationSpeed * Time.deltaTime * 15f;
+
+                        travelerTransform.position = Vector3.MoveTowards(
+                                                        travelerTransform.position,
+                                                        positions[_travelers.travelerData[i].pathIndex],
+                                                        stepPos);
+
+                        travelerTransform.rotation = Quaternion.Lerp(
+                                                        travelerTransform.rotation,
+                                                        rotations[_travelers.travelerData[i].pathIndex],
+                                                        stepRot);
+
+                        if (H.isEqual(travelerTransform.position, positions[_travelers.travelerData[i].pathIndex]))
+                        {
+                            _travelers.travelerData[i].pathIndex++;
+                        }
+
+                        if (_travelers.travelerData[i].pathIndex >= positions.Length)
+                        {
+                            // animationMove = false;
+                            _travelers.travelerData[i].pathIndex = 0;
+                        }
                     }
+
                 }
             }
         }

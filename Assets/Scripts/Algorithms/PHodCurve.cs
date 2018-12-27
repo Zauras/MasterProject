@@ -21,7 +21,7 @@ namespace Master {
         //##### API ##############################################################################
 
         /// IF: Spline begining || Independent Curve
-        public static (List<float3>, List<quaternion>) FindPHCmotion(Transform pT0, Transform pT1,
+        public static (List<float3>, List<quaternion>) FindPHcMotion(Transform pT0, Transform pT1,
                                                                       quaternion v0, quaternion v1)
         {
             float4 q0 = FindEndPointRotations(v0, Mathf.PI / 8f);
@@ -35,7 +35,7 @@ namespace Master {
         }
 
         /// IF: Spline Middleware || OpenSpline Ending
-        public static (List<float3>, List<quaternion>) FindPHCmotion(Transform pT0, 
+        public static (List<float3>, List<quaternion>) FindPHcMotion(Transform pT0, 
                                                                       Transform pT1, 
                                                                       quaternion v1  )
         {
@@ -49,7 +49,7 @@ namespace Master {
         }
 
         /// IF: ClosedSpline Ending
-        public static (List<float3>, List<quaternion>) FindPHCmotion(Transform pT0, Transform pT1)
+        public static (List<float3>, List<quaternion>) FindPHcMotion(Transform pT0, Transform pT1)
         {
             (List<float3>, List<quaternion>) movementData = CalcPHcurveMotion(
                                         pT0.position, H.QuatToFloat4(pT0.rotation),
