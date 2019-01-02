@@ -50,14 +50,17 @@ namespace Master
                     if (i < j)
                     {
                         fList.Add((t - TList[i]) * (t - TList[j]));
-                        //print("i: "+i+" ; j:"+j);
+                        //Debug.Log("i: "+i+" ; j:"+j);
                     }
                 }
             }
             return fList;
         }
 
-        public static (List<float3>, List<quaternion>) GenerateCurve(float3[] points, float4[] weights)
+        public static (List<float3>, List<quaternion>) GenerateCurve(Transform curveT,
+                                                                    bool useRotWithWeight,
+                                                                    float3[] points,
+                                                                    float4[] weights)
         {
             float[] timePath = PathTimeList.timePath;
 
@@ -68,11 +71,12 @@ namespace Master
             // qt-pwf(t); pt-wf(t);
             // Visis C(t) bus Img(H)
             float3[] curve = new float3[timePath.Length];
-            float4 Ft, Wt;
+            float4 q, p;
+
             for (int t = 0; t < timePath.Length; t++)
             {
-                Ft = new float4(0, 0, 0, 0); // q(t)
-                Wt = new float4(0, 0, 0, 0); // p(t)
+                q = new float4(0, 0, 0, 0); // Ft(t)
+                p = new float4(0, 0, 0, 0); // Wt(t)
 
                 List<float> fiList = getFiList(timePath[t]);
 
@@ -80,15 +84,28 @@ namespace Master
                 {
                     //t yra rezoliucijos delta step
                     if (points.Length == 5) {
-                        Ft += H.Mult(points[i * 2], weights[i]) * fiList[i];
+                        q += H.Mult(points[i * 2], weights[i]) * fiList[i];
                     } else {
-                        Ft += H.Mult(points[i], weights[i]) * fiList[i];
+                        q += H.Mult(points[i], weights[i]) * fiList[i];
                     }
-                    Wt += weights[i] * fiList[i];
+                    p += weights[i] * fiList[i];
                 }
-                // Debug.Log(Wt +" ... "+ Ft);
-                positions.Add( H.Float4ToFloat3(H.Mult(Ft, H.Invers(Wt)))); // Movement
-                rotations.Add( H.Float4ToQuat(Ft) ); // Rotation
+                float4 x = H.Mult(q, H.Invers(p));
+                positions.Add(curveT.TransformPoint(H.Float4ToFloat3(x))); // Movement
+
+                float4 rot = new float4();
+                if (!useRotWithWeight) {
+                    rot = H.Mult(H.Mult(p, x), H.Invers(p)); // Rotation
+                } else {
+                    rot = H.Mult(H.Mult(q, x), H.Invers(q)); // Rotation
+                }
+
+                // Tik su q arba qxq^-1
+                //test = test * Quaternion.Euler(180f, 0, 0);
+                //test = test * Quaternion.Euler(0f, -180f, 0f);
+
+                rotations.Add(H.Float4ToQuat(rot)); // Rotation
+
             }
             return (positions, rotations);
         }

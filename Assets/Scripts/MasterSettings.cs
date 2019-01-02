@@ -13,8 +13,11 @@ namespace Master {
 
         public float ERFheight = 1f;
 
+        public bool isVectorArrowOn = true;
+        public bool isVectorLineOn = false;
 
-        public float droveSpeed = 15.0f;
+
+        public float droveSpeed = 40.0f;
         public int pathResolution = 100;
 
         public float weight0 = 1.0f;

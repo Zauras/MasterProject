@@ -81,42 +81,64 @@ namespace Master
         }
 
 
-        private (float3[], quaternion[]) Calc_IRp3v2_motion(Transform pT, bool isClosedSpline, int curveCount)
+        private (float3[], quaternion[]) Calc_IRp3v2_motion(
+            Transform splineT, bool isRotWithWeight, bool isClosedSpline, int curveCount)
         {
             List<float3> posSpline = new List<float3>();
             List<quaternion> rotSpline = new List<quaternion>();
 
             int cp = 0, vp = 1;
-            float3 firstCP = new float3();
-            float3 firstVP = new float3();
-            float3 vp0 = new float3();
-            float3 vp1 = new float3();
+            Transform firstCP = null;
+            Transform firstVP = null;
+            Transform vp0 = null;
+            Transform vp1 = null;
             float3[] CPs = new float3[3];
+            float4 firstWeight = LibQuaternionAritmetics.one;
 
             for (int c = 0; c < curveCount; c++) // visi vaikai
             {
                 if (c == 0) // BEGINING OF SPLINE // full Algorithm (as independent curves)
                 {
-                    CPs[0] = firstCP = pT.GetChild(cp).position;  // startPoint
+                    Transform cp0T = firstCP = splineT.GetChild(cp);
+                    CPs[0] = cp0T.localPosition;  // startPoint
                     cp += 2; // To skip vecPoint index
-                    CPs[1] = pT.GetChild(cp).position;            // midPoint
-                    cp ++;
-                    CPs[2] = pT.GetChild(cp).position;            // endPoint
 
-                    Transform vpT = pT.GetChild(vp);
-                    vp0 = firstVP = vpT.position;                 // startVector
-                    LineRendererSystem.SetLinePoints(vpT.GetComponent<LineRenderer>(),
-                                                        CPs[0], vp0);
+                    Transform cp1T = splineT.GetChild(cp);
+                    CPs[1] = cp1T.localPosition;            // midPoint
+                    cp ++;
+
+                    Transform cp2T = splineT.GetChild(cp);
+                    CPs[2] = cp2T.localPosition;            // endPoint
+
+                    vp0 = firstVP = splineT.GetChild(vp); // startVector
+                    //vp0 = firstVP = vpT.localPosition;    
+
+                    if (BootStrap.Settings.isVectorLineOn == true)
+                    {
+                        LineRendererSystem.SetLinePoints(vp0.GetComponent<LineRenderer>(),
+                                                           cp0T.position, vp0.position);
+                    }
+                    else if (BootStrap.Settings.isVectorArrowOn == true)
+                    {
+                        VectorController.SetVector(vp0, cp0T.position);
+                    }
 
                     vp += 3; // To skip controlPoint indexes
-                    vpT = pT.GetChild(vp);
-                    vp1 = vpT.position;                          // endVector
-                    LineRendererSystem.SetLinePoints(vpT.GetComponent<LineRenderer>(),
-                                                        CPs[2], vp1);
+                    vp1 = splineT.GetChild(vp);              // endVector
+
+                    if (BootStrap.Settings.isVectorLineOn == true)
+                    {
+                        LineRendererSystem.SetLinePoints(vp1.GetComponent<LineRenderer>(),
+                                                       cp2T.position, vp1.position);
+                    }
+                    else if (BootStrap.Settings.isVectorArrowOn == true)
+                    {
+                        VectorController.SetVector(vp1, cp2T.position);
+                    }
 
                     (List<float3>, List<quaternion>) IRcurveData =
-                        IRp3v2Curve.FindIRcMotion(CPs, vp0, vp1); // positions, rotations
-
+                        IRp3v2Curve.FindIRcMotion(
+                            splineT, ref firstWeight, isRotWithWeight, CPs, vp0.localPosition, vp1.localPosition); // positions, rotations
                     AddToSpline(posSpline, rotSpline, IRcurveData);
                 }
 
@@ -124,11 +146,12 @@ namespace Master
                 {
                     CPs[0] = CPs[2];                    // startPoint
                     cp += 2; // To skip vecPoint index
-                    CPs[1] = pT.GetChild(cp).position;  // midPoint
-                    CPs[2] = firstCP;                   // endPoint
+                    CPs[1] = splineT.GetChild(cp).localPosition;  // midPoint
+                    CPs[2] = firstCP.localPosition;               // endPoint
 
                     (List<float3>, List<quaternion>) IRcurveData =
-                        IRp3v2Curve.FindIRcMotion(CPs, vp1, firstVP); // positions, rotations
+                        IRp3v2Curve.FindIRcMotion(
+                            splineT, ref firstWeight, isRotWithWeight, CPs, vp1.localPosition, firstVP.localPosition); // positions, rotations
 
                     AddToSpline(posSpline, rotSpline, IRcurveData);
                 }
@@ -137,20 +160,34 @@ namespace Master
                 {
                     CPs[0] = CPs[2];                              // startPoint
                     cp += 2; // To skip vecPoint index
-                    CPs[1] = pT.GetChild(cp).position;            // midPoint
+
+                    CPs[1] = splineT.GetChild(cp).localPosition;            // midPoint
                     cp++;
-                    CPs[2] = pT.GetChild(cp).position;            // endPoint
+
+                    Transform cp2T = splineT.GetChild(cp);
+                    CPs[2] = cp2T.localPosition;            // endPoint
 
                     vp0 = vp1;                                    // startVector
                     vp += 3; // To skip controlPoint indexes
-                    Transform vpT = pT.GetChild(vp);
-                    vp1 = vpT.position;                          // endVector
-                    LineRendererSystem.SetLinePoints(vpT.GetComponent<LineRenderer>(),
-                                                        CPs[2], vp1);
+
+                    vp1 = splineT.GetChild(vp);          // endVector
+
+                    if (BootStrap.Settings.isVectorLineOn == true)
+                    {
+                        LineRendererSystem.SetLinePoints(vp1.GetComponent<LineRenderer>(),
+                                                            cp2T.position, vp1.position);
+                    }
+                    else if (BootStrap.Settings.isVectorArrowOn == true)
+                    {
+                        VectorController.SetVector(vp1, cp2T.position);
+                    }
 
                     (List<float3>, List<quaternion>) IRcurveData =
-                        IRp3v2Curve.FindIRcMotion(CPs, vp0, vp1); // positions, rotations
+                        IRp3v2Curve.FindIRcMotion(
+                            splineT, ref firstWeight, isRotWithWeight, CPs, vp0.localPosition, vp1.localPosition); // positions, rotations
 
+                    //List<float3> globalPositions = ConvertToGlobalPositions(IRcurveData.);
+                    //IRcurveData.Item1 = 
                     AddToSpline(posSpline, rotSpline, IRcurveData);
                 }
 
@@ -174,6 +211,7 @@ namespace Master
                     Transform pathTransform = _paths.T[i];
                     (float3[], quaternion[]) IRmotion  =
                             Calc_IRp3v2_motion( pathTransform,
+                                                _paths.markers[i].useRotWithWeight,
                                                 _paths.motions[i].isClosedSpline,
                                                 _paths.motions[i].curveCount);
 

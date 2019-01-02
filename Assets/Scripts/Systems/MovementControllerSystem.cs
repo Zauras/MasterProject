@@ -76,33 +76,34 @@ namespace Master
                     float3[] positions = motion.positions;
                     quaternion[] rotations = motion.rotations;
 
-                    // Debug.Log(positions.Length + " IR "+ rotations.Length);
-
                     //Debug.Log(_travelers.travelerData[i].pathIndex);
                     // Traveler Data:
                     Transform travelerTransform = _travelers.transform[i];
 
                     if (_travelers.travelerData[i].pathIndex == 0) // Jei kelio pradzia
                     {
-                        travelerTransform.position = positions[0];
                         travelerTransform.rotation = rotations[0];
+                        travelerTransform.position = positions[0];
                         _travelers.travelerData[i].pathIndex++;
                     }
 
                     if (animationMove)
                     {
                         float stepPos = BootStrap.Settings.animationSpeed * Time.deltaTime;
-                        float stepRot = BootStrap.Settings.animationSpeed * Time.deltaTime * 15f;
+                        float stepRot = BootStrap.Settings.animationSpeed * Time.deltaTime*1000f;
 
                         travelerTransform.position = Vector3.MoveTowards(
                                                         travelerTransform.position,
                                                         positions[_travelers.travelerData[i].pathIndex],
                                                         stepPos);
 
-                        travelerTransform.rotation = Quaternion.Lerp(
-                                                        travelerTransform.rotation,
-                                                        rotations[_travelers.travelerData[i].pathIndex],
-                                                        stepRot);
+                        if (_travelers.travelerData[i].pathIndex > 0)
+                        {
+                            travelerTransform.rotation = Quaternion.Lerp(
+                                travelerTransform.rotation,
+                                rotations[_travelers.travelerData[i].pathIndex],
+                                stepRot);
+                        }
 
                         if (H.isEqual(travelerTransform.position, positions[_travelers.travelerData[i].pathIndex]))
                         {

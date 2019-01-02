@@ -7,12 +7,13 @@ using UnityEngine;
 
 namespace Master
 {
-    using H = Master.LibQuaternionAritmetics;
-
     public class IRp3v2Curve : AbstractCurveAlgorithm
     {
         // ##### API & Setup ######################################################
-        public static (List<float3>, List<quaternion>) FindIRcMotion(float3[] controlPoints,
+        public static (List<float3>, List<quaternion>) FindIRcMotion(Transform curveT,
+                                                                     ref float4 w0,
+                                                                     bool isRotWithWeight,
+                                                                     float3[] controlPoints,
                                                                      float3 frontVector, 
                                                                      float3 backVector)
         {
@@ -28,9 +29,10 @@ namespace Master
                                         delta20, delta40, delta24, backVector,
                                         delta20, frontVector, delta24, delta40);
 
-            float4[] weights = { H.one, w1, w2 };
+            float4[] weights = { w0, w1, w2 };
+            w0 = w2;
 
-            return GenerateCurve(controlPoints, weights); ;
+            return GenerateCurve(curveT, isRotWithWeight, controlPoints, weights); ;
         }
     }
 }

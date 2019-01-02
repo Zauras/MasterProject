@@ -7,5 +7,6 @@ namespace Master
     public class IRp3v2motionMarker : MonoBehaviour
     {
         public readonly string TYPE = "IRp3v2";
+        public bool useRotWithWeight = false;
     }
 }

@@ -153,8 +153,8 @@ namespace Master {
             // Isdalintas Y skaiciavimas:
             float4 bc = 0.25f * H.StarDub(bb) - cc;
             float nbc = m.length(bc); // norm of bc
-            float4 virsus = H.iif + bc / nbc;
-            float4 Y = m.sqrt(nbc) * virsus / m.length(virsus);
+            float4 top = H.iif + bc / nbc;
+            float4 Y = m.sqrt(nbc) * top / m.length(top);
 
             float phi = -Mathf.PI / 2.0f;
             float4 qphi = new float4(m.sin(phi), 0f, 0f, m.cos(phi));

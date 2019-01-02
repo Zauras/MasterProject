@@ -115,14 +115,30 @@ namespace Master
 
                     Transform vec0 = pT.GetChild(vp);
                     quaternion vH0 = CalcDistanceQuat(vec0.position, firstCP.position);
-                    LineRendererSystem.SetLinePoints(vec0.GetComponent<LineRenderer>(),
-                                                      firstCP.position, vec0.position);
+
+                    if(BootStrap.Settings.isVectorLineOn == true)
+                    {
+                        LineRendererSystem.SetLinePoints(vec0.GetComponent<LineRenderer>(),
+                                  firstCP.position, vec0.position);
+                    }
+                    else if (BootStrap.Settings.isVectorArrowOn == true)
+                    {
+                        VectorController.SetVector(vec0, firstCP.position);
+                    }
                     vp += 2; // To skip controlPoint index
 
                     Transform vec1 = pT.GetChild(vp);
                     quaternion vH1 = CalcDistanceQuat(pT.GetChild(vp).position, currCP.position);
-                    LineRendererSystem.SetLinePoints(vec1.GetComponent<LineRenderer>(),
+
+                    if (BootStrap.Settings.isVectorLineOn == true)
+                    {
+                        LineRendererSystem.SetLinePoints(vec1.GetComponent<LineRenderer>(),
                                                       currCP.position, vec1.position);
+                    }
+                    else if (BootStrap.Settings.isVectorArrowOn == true)
+                    {
+                        VectorController.SetVector(vec1, currCP.position);
+                    }
                     vp += 2; // To skip controlPoint index
 
                     (List<float3>, List<quaternion>) PHcurveData =
@@ -146,8 +162,16 @@ namespace Master
 
                     Transform vec1 = pT.GetChild(vp);
                     quaternion vH1 = CalcDistanceQuat(vec1.position, nextCP.position);
-                    LineRendererSystem.SetLinePoints(vec1.GetComponent<LineRenderer>(),
-                                                      nextCP.position, vec1.position);
+
+                    if (BootStrap.Settings.isVectorLineOn == true)
+                    {
+                        LineRendererSystem.SetLinePoints(vec1.GetComponent<LineRenderer>(),
+                                                          nextCP.position, vec1.position);
+                    }
+                    else if (BootStrap.Settings.isVectorArrowOn == true)
+                    {
+                        VectorController.SetVector(vec1, nextCP.position);
+                    }
                     vp += 2; // To skip controlPoint index
 
                     (List<float3>, List<quaternion>) PHcurveData =
