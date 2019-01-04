@@ -58,6 +58,8 @@ namespace Master
         }
 
         public static (List<float3>, List<quaternion>) GenerateCurve(Transform curveT,
+                                                                    bool useTengentFix,
+                                                                    bool useNormalFix,
                                                                     bool useRotWithWeight,
                                                                     float3[] points,
                                                                     float4[] weights)
@@ -100,11 +102,27 @@ namespace Master
                     rot = H.Mult(H.Mult(q, x), H.Invers(q)); // Rotation
                 }
 
-                // Tik su q arba qxq^-1
-                //test = test * Quaternion.Euler(180f, 0, 0);
-                //test = test * Quaternion.Euler(0f, -180f, 0f);
+                quaternion rotH = H.Float4ToQuat(rot);
 
-                rotations.Add(H.Float4ToQuat(rot)); // Rotation
+                if (useTengentFix)
+                {
+                    rotH *= Quaternion.Euler(0f, 180f, 0f);
+                }
+                if (useNormalFix)
+                {
+                    rotH *= Quaternion.Euler(0f, 0, 180f);
+                }
+                // Geriau su su q arba qxq^-1
+
+
+                // rotH = new quaternion(0, rotH.value.y, rotH.value.z, rotH.value.w);
+
+                //rotH = new quaternion(rotH.value.x, 0, rotH.value.z, rotH.value.w);
+
+                //rotH = new quaternion(rotH.value.x, rotH.value.y, 0, rotH.value.w);
+
+                //rotH = new quaternion(rotH.value.x, rotH.value.y, rotH.value.z, 0);
+                rotations.Add(rotH); // Rotation
 
             }
             return (positions, rotations);

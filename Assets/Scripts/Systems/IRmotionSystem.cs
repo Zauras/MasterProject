@@ -82,7 +82,10 @@ namespace Master
 
 
         private (float3[], quaternion[]) Calc_IRp3v2_motion(
-            Transform splineT, bool isRotWithWeight, bool isClosedSpline, int curveCount)
+            Transform splineT, bool useTangentFix,
+            bool useNormalFix, bool isRotWithWeight, 
+            float[] w1Kofs, float[] w2Kofs,
+            bool isClosedSpline, int curveCount)
         {
             List<float3> posSpline = new List<float3>();
             List<quaternion> rotSpline = new List<quaternion>();
@@ -138,7 +141,11 @@ namespace Master
 
                     (List<float3>, List<quaternion>) IRcurveData =
                         IRp3v2Curve.FindIRcMotion(
-                            splineT, ref firstWeight, isRotWithWeight, CPs, vp0.localPosition, vp1.localPosition); // positions, rotations
+                            splineT, ref firstWeight,
+                             useTangentFix,
+             useNormalFix, isRotWithWeight,
+                            CPs, vp0.localPosition, vp1.localPosition,
+                            w1Kofs, w2Kofs); // positions, rotations
                     AddToSpline(posSpline, rotSpline, IRcurveData);
                 }
 
@@ -151,7 +158,11 @@ namespace Master
 
                     (List<float3>, List<quaternion>) IRcurveData =
                         IRp3v2Curve.FindIRcMotion(
-                            splineT, ref firstWeight, isRotWithWeight, CPs, vp1.localPosition, firstVP.localPosition); // positions, rotations
+                            splineT, ref firstWeight,
+                             useTangentFix,
+             useNormalFix, isRotWithWeight, 
+                            CPs, vp1.localPosition, firstVP.localPosition,
+                            w1Kofs, w2Kofs); // positions, rotations
 
                     AddToSpline(posSpline, rotSpline, IRcurveData);
                 }
@@ -184,7 +195,11 @@ namespace Master
 
                     (List<float3>, List<quaternion>) IRcurveData =
                         IRp3v2Curve.FindIRcMotion(
-                            splineT, ref firstWeight, isRotWithWeight, CPs, vp0.localPosition, vp1.localPosition); // positions, rotations
+                            splineT, ref firstWeight,
+                             useTangentFix,
+             useNormalFix, isRotWithWeight,
+                            CPs, vp0.localPosition, vp1.localPosition,
+                            w1Kofs, w2Kofs); // positions, rotations
 
                     //List<float3> globalPositions = ConvertToGlobalPositions(IRcurveData.);
                     //IRcurveData.Item1 = 
@@ -211,7 +226,11 @@ namespace Master
                     Transform pathTransform = _paths.T[i];
                     (float3[], quaternion[]) IRmotion  =
                             Calc_IRp3v2_motion( pathTransform,
-                                                _paths.markers[i].useRotWithWeight,
+                                                _paths.markers[i].useTangentFix,
+                                                _paths.markers[i].useNormalFix,
+                                                _paths.markers[i].useRotWithInterpolation,
+                                                _paths.markers[i].w1Kofs,
+                                                _paths.markers[i].w2Kofs,
                                                 _paths.motions[i].isClosedSpline,
                                                 _paths.motions[i].curveCount);
 
