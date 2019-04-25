@@ -9,12 +9,14 @@ namespace Master
 {
     public class SetupSplinesSystem : ComponentSystem
     {
+        /*
         struct PHchunk
         {
             public readonly int Length;
             public ComponentArray<PHmotionMarker> markers;
             public ComponentArray<Transform> transforms;
             public ComponentArray<MotionData> motions;
+
         }
         [Inject] private PHchunk _phs;
 
@@ -26,7 +28,7 @@ namespace Master
             public ComponentArray<MotionData> motions;
         }
         [Inject] private IRchunk _irs;
-
+        */
 
         private int CountCurves(Transform transform, string curveType, bool isClosedSpline)
         {
@@ -54,7 +56,35 @@ namespace Master
 
         protected override void OnStartRunning()
         {
-            UpdateInjectedComponentGroups();
+            //UpdateInjectedComponentGroups();
+
+            // PH paths
+            Entities.ForEach((
+                PHmotionMarker marker,
+                Transform transform,
+                MotionData motions
+            ) =>
+            {
+                motions.curveCount = CountCurves(
+                    transform,
+                    marker.TYPE,
+                    motions.isClosedSpline);
+            });
+
+            // IRp3v2 paths
+            Entities.ForEach((
+                IRp3v2motionMarker marker,
+                Transform transform,
+                MotionData motions
+            ) =>
+            {
+                motions.curveCount = CountCurves(
+                    transform,
+                    marker.TYPE,
+                    motions.isClosedSpline);
+            });
+
+            /*
             for (int i = 0; i < _phs.Length; i++)
             {
                 _phs.motions[i].curveCount = CountCurves(_phs.transforms[i],
@@ -69,6 +99,7 @@ namespace Master
                                                           _irs.markers[i].TYPE,
                                                           _irs.motions[i].isClosedSpline);
             }
+            */
         }
 
         protected override void OnUpdate() { }

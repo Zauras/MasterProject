@@ -12,6 +12,7 @@ namespace Master
     [UpdateAfter(typeof(PHmotionSystem))]
     public class ERFramesSystem : ComponentSystem
     {
+        /*
         struct Chunks
         {
             //Using as a filter & dataEntries (no actual Enteties)
@@ -21,9 +22,37 @@ namespace Master
             public ComponentArray<PathERFs> pathERFs;
         }
         [Inject] Chunks _paths;
+        */
 
         protected override void OnUpdate()
         {
+            Entities.ForEach((
+                PathERFs pathERFs,
+                Transform pathTransform,
+                MotionData motion
+            ) => {
+
+                if (pathERFs.ERframes == null)
+                {
+                    pathERFs.ERframes =
+                        new EulerRodriguesFrame[motion.positions.Length];
+                }
+
+                if (motion.positions.Length > 0
+                    || motion.positions.Length != pathERFs.ERframes.Length)
+                {
+                    pathERFs.ERframes =
+                        new EulerRodriguesFrame[motion.positions.Length];
+                }
+
+                for (int e = 0; e < motion.positions.Length; e++)
+                {   // Recalculate ERFrame & send it to Gizmos to render
+                    pathERFs.ERframes[e] = CalcERFrame(motion.positions[e],
+                                                       motion.rotations[e]);
+                }
+            });
+
+            /*
             for (int i = 0; i < _paths.Length; i++) // Paths
             {
                 Transform pathTransform = _paths.transform[i];
@@ -47,6 +76,7 @@ namespace Master
                                                                     _paths.motion[i].rotations[e]);
                 }
             }
+            */
         }
 
         private static EulerRodriguesFrame CalcERFrame(float3 position, quaternion rotation)

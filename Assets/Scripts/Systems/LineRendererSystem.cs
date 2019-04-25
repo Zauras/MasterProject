@@ -5,13 +5,12 @@ using Unity.Transforms;
 using Unity.Collections;
 using System.Collections.Generic;
 
-
-
 namespace Master
 {
     [UpdateBefore(typeof(MasterEngineSystem))]
     public class LineRendererSystem : ComponentSystem
     {
+        /*
         struct PathChunks
         {
             public readonly int Length;
@@ -27,11 +26,30 @@ namespace Master
             public ComponentArray<LineRenderer> lrs;
         }
         [Inject] private VectorChunks _vectorChunks;
+        */
 
         protected override void OnStartRunning()
         {
-            UpdateInjectedComponentGroups();
+            //UpdateInjectedComponentGroups();
+
            // Debug.Log(_pathChunks.lrs[0]);
+           Entities.ForEach((MotionData motion, LineRenderer lineRenderer) =>
+           {
+               SetupLineRenderer(lineRenderer,
+                   BootStrap.Settings.lineWide,
+                   BootStrap.Settings.lineColor,
+                   BootStrap.Settings.lineRendererMaterial);
+           });
+
+           Entities.ForEach((VectorPointMarker vectorMarker, LineRenderer lineRenderer) =>
+           {
+               SetupLineRenderer(lineRenderer,
+                   BootStrap.Settings.lineWide,
+                   BootStrap.Settings.lineColor,
+                   BootStrap.Settings.lineRendererMaterial);
+           });
+
+            /*
             for (int i = 0; i < _pathChunks.Length; i++)
             {
                 SetupLineRenderer(_pathChunks.lrs[i],
@@ -47,6 +65,7 @@ namespace Master
                 BootStrap.Settings.vectorLineColor,
                 BootStrap.Settings.lineRendererMaterial);
             }
+            */
         }
 
         private static void SetupLineRenderer(LineRenderer lineRenderer, float widness, Color color, Material material)

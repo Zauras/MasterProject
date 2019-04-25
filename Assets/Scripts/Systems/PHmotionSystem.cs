@@ -9,6 +9,7 @@ namespace Master
 {
     public class PHmotionSystem : ComponentSystem
     {
+        /*
         struct Chunks
         {
             //public EntityArray entities;
@@ -20,6 +21,7 @@ namespace Master
             public ComponentArray<LineRenderer> lineRenderers;
         }
         [Inject] private Chunks _paths;
+        */
 
         struct CPsAndVectors
         {
@@ -189,7 +191,24 @@ namespace Master
         {
             if (!BootStrap.Settings.stopTime)
             {
-                 //BootStrap.Settings.stopTime = true;
+                Entities.ForEach((
+                    PHmotionMarker m,
+                    Transform pathTransform,
+                    LineRenderer lineRenderer,
+                    MotionData motions
+                ) =>
+                {
+                 (float3[], quaternion[]) PHmotion = Calc_PH_motion(pathTransform,
+                     motions.isClosedSpline,
+                     motions.curveCount);
+                 motions.positions = PHmotion.Item1;
+                 motions.rotations = PHmotion.Item2;
+                 LineRendererSystem.SetPolygonPoints(lineRenderer, PHmotion.Item1);
+                 });
+
+                //BootStrap.Settings.stopTime = true;
+
+                /*
                 for (int i = 0; i < _paths.Length; i++) // Paths
                 {
                     Transform pathTransform = _paths.transforms[i];
@@ -200,6 +219,7 @@ namespace Master
                     _paths.motions[i].rotations = PHmotion.Item2;
                     LineRendererSystem.SetPolygonPoints(_paths.lineRenderers[i], PHmotion.Item1);
                 }
+                */
             }
         }
 

@@ -9,6 +9,7 @@ namespace Master
 {
     public class IRmotionSystem : ComponentSystem
     {
+        /*
         struct Chunks
         {
             public ComponentArray<IRp3v2motionMarker> markers;
@@ -18,6 +19,7 @@ namespace Master
             public ComponentArray<LineRenderer> lrs;
         }
         [Inject] private Chunks _paths;
+        */
 
         struct CPsAndVectors
         {
@@ -219,8 +221,32 @@ namespace Master
         {
             if (!BootStrap.Settings.stopTime)
             {
+
                 //BootStrap.Settings.stopTime = true;
-                // EntityManager em = World.Active.GetOrCreateManager<EntityManager>();
+
+                Entities.ForEach((
+                    IRp3v2motionMarker marker,
+                    Transform pathTransform,
+                    LineRenderer lineRenderer,
+                    MotionData motion
+                ) =>
+                {
+                    (float3[], quaternion[]) IRmotion = Calc_IRp3v2_motion(
+                        pathTransform,
+                        marker.useTangentFix,
+                        marker.useNormalFix,
+                        marker.useRotWithInterpolation,
+                        marker.w1Kofs,
+                        marker.w2Kofs,
+                        motion.isClosedSpline,
+                        motion.curveCount);
+
+                    motion.positions = IRmotion.Item1;
+                    motion.rotations = IRmotion.Item2;
+                    LineRendererSystem.SetPolygonPoints(lineRenderer, IRmotion.Item1);
+                });
+
+                /*
                 for (int i = 0; i < _paths.Length; i++) // Paths2
                 {
                     Transform pathTransform = _paths.T[i];
@@ -238,6 +264,7 @@ namespace Master
                     _paths.motions[i].rotations = IRmotion.Item2;
                     LineRendererSystem.SetPolygonPoints(_paths.lrs[i], IRmotion.Item1);
                 }
+                */
             }
         }
 
