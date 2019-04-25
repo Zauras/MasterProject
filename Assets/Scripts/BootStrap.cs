@@ -41,7 +41,7 @@ namespace Master
         {
             //Debug.Log("2. BootStrap: InitializeWithScene()");
             // Don't touch - just init Settings GameObject
-            EntityManager em = World.Active.GetOrCreateManager<EntityManager>();
+           // EntityManager em = World.Active.GetOrCreateSystem<EntityManager>();
 
             var settingsGO = GameObject.Find("Settings");
             if (settingsGO == null)
@@ -62,16 +62,6 @@ namespace Master
             InitializeWithScene();
         }
 
-        private static MeshInstanceRenderer GetLookFromPrototype(string protoName)
-        {
-            var proto = GameObject.Find(protoName);
-            var result = proto.GetComponent<MeshInstanceRendererComponent>().Value;
-            Object.Destroy(proto);
-            return result;
-
-            // Now Gather Meshs(Looks) & save into MeshRenderer Components:
-            //DroneLook = GetLookFromPrototype("DroneRenderPrototype");
-        }
 
 
         /*

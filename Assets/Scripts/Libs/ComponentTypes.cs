@@ -99,11 +99,11 @@ namespace Master
 
     public struct CPTransform : IBufferElementData
     {
-        public CPTransform(Position Value) : this() { this.Value = Value; }
-        public static implicit operator Position(CPTransform e) { return e.Value; }
+        public CPTransform(Translation Value) : this() { this.Value = Value; }
+        public static implicit operator Translation(CPTransform e) { return e.Value; }
 
         // Actual value each 
-        public Position Value { get; }
+        public Translation Value { get; }
     }
 
 

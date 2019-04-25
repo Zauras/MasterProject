@@ -20,23 +20,77 @@ namespace Master
         }
 
         public static float4 GenerateWeight(float kof11, float kof12, float kof21, float kof22,
-                                 float3 delta1, float3 delta2, float3 delta3, float3 delta4,
-                                  float3 delta5, float3 delta6, float3 delta7, float3 delta8)
+                                     float3 delta1, float3 delta2, float3 delta3, float3 delta4,
+                                     float3 delta5, float3 delta6, float3 delta7, float3 delta8,
+                                     float4 weight0)
+        {
+            float3 invDelta1 = H.Invers(delta1);
+            float3 invDelta3 = H.Invers(delta3);
+            float3 invDelta5 = H.Invers(delta5);
+            float3 invDelta7 = H.Invers(delta7);
+            
+            float4 firstPart = kof11 * H.Mult(invDelta1, delta2) 
+                               + kof12 * H.Mult(delta8, invDelta3);
+            
+            // Pagal iprasta formule
+            float4 secPart = kof21 * H.Mult(invDelta5, delta6)
+                               + kof22 * H.Mult(invDelta7, delta8);
+
+
+            // EXAMING:
+
+           // float4 weight = H.Mult(H.Mult(H.Invers(firstPart), secPart), weight0);
+            float4 weight = H.Mult(H.Invers(firstPart), secPart);
+            //weight = H.Mult(weight, weights[0]);
+            return weight;
+        }
+
+        public static float4 GenerateWeightTest1(float kof11, float kof12, float kof21, float kof22,
+                                     float3 delta1, float3 delta2, float3 delta3, float3 delta4,
+                                     float3 delta5, float3 delta6, float3 delta7, float3 delta8,
+                                     float4 weight0)
         {
             float3 invDelta1 = H.Invers(delta1);
             float3 invDelta3 = H.Invers(delta3);
             float3 invDelta5 = H.Invers(delta5);
             float3 invDelta7 = H.Invers(delta7);
 
-            float4 firstPart = kof11 * H.Mult(invDelta1, delta2) 
-                               + kof12 * H.Mult(invDelta3, delta4);
+            float4 firstPart = kof11 * H.Mult(invDelta1, delta2)
+                              + kof12 * H.Mult(delta8, invDelta3);
+
+            // Pagal iprasta formule
             float4 secPart = kof21 * H.Mult(invDelta5, delta6)
-                               + kof22 * H.Mult(invDelta7, delta8);
+                             + kof22 * H.Mult(invDelta7, delta8);
+                             
 
             float4 weight = H.Mult(H.Invers(firstPart), secPart);
             //weight = H.Mult(weight, weights[0]);
             return weight;
         }
+
+        public static float4 GenerateWeightTest2(float kof11, float kof12, float kof21, float kof22,
+                             float3 delta1, float3 delta2, float3 delta3, float3 delta4,
+                             float3 delta5, float3 delta6, float3 delta7, float3 delta8,
+                             float4 weight0)
+        {
+            float3 invDelta1 = H.Invers(delta1);
+            float3 invDelta3 = H.Invers(delta3);
+            float3 invDelta5 = H.Invers(delta5);
+            float3 invDelta7 = H.Invers(delta7);
+
+            float4 firstPart = kof11 * H.Mult(invDelta1, delta2)
+                               + kof12 * H.Mult(delta8, invDelta3);
+
+            // Pagal iprasta formule
+            float4 secPart = kof21 * H.Mult(invDelta5, delta6);
+            // + kof22 * H.Mult(invDelta7, delta8);
+
+            float4 weight = H.Mult(H.Invers(firstPart), secPart);
+            //weight = H.Mult(weight, weights[0]);
+            return weight;
+        }
+
+
 
         public static List<float> getFiList(float t)
         { // kreives funkcija
