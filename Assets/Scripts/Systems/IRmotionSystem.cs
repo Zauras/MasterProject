@@ -141,13 +141,13 @@ namespace Master
                         VectorController.SetVector(vp1, cp2T.position);
                     }
 
-                    (List<float3>, List<quaternion>) IRcurveData =
-                        IRp3v2Curve.FindIRcMotion(
-                            splineT, ref firstWeight,
-                             useTangentFix,
-             useNormalFix, isRotWithWeight,
-                            CPs, vp0.localPosition, vp1.localPosition,
-                            w1Kofs, w2Kofs); // positions, rotations
+                    (List<float3>, List<quaternion>) IRcurveData = IRp3v2Curve.FindIRcMotion(
+                          splineT, ref firstWeight,
+                         useTangentFix,
+                          useNormalFix, isRotWithWeight,
+                          CPs, vp0.localPosition, vp1.localPosition,
+                          w1Kofs, w2Kofs); // positions, rotations
+                    
                     AddToSpline(posSpline, rotSpline, IRcurveData);
                 }
 

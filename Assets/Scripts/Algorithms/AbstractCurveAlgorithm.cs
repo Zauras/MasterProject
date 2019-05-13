@@ -30,25 +30,23 @@ namespace Master
             float3 invDelta7 = H.Invers(delta7);
             
             float4 firstPart = kof11 * H.Mult(invDelta1, delta2) 
-                               + kof12 * H.Mult(delta8, invDelta3);
+                               + kof12 * H.Mult(invDelta3, delta4);
             
             // Pagal iprasta formule
             float4 secPart = kof21 * H.Mult(invDelta5, delta6)
                                + kof22 * H.Mult(invDelta7, delta8);
 
-
             // EXAMING:
-
            // float4 weight = H.Mult(H.Mult(H.Invers(firstPart), secPart), weight0);
             float4 weight = H.Mult(H.Invers(firstPart), secPart);
-            //weight = H.Mult(weight, weights[0]);
+            //weight = H.Mult(weight, weight0);
             return weight;
         }
 
         public static float4 GenerateWeightTest1(float kof11, float kof12, float kof21, float kof22,
-                                     float3 delta1, float3 delta2, float3 delta3, float3 delta4,
-                                     float3 delta5, float3 delta6, float3 delta7, float3 delta8,
-                                     float4 weight0)
+                                         float3 delta1, float3 delta2, float3 delta3, float3 delta4,
+                                         float3 delta5, float3 delta6, float3 delta7, float3 delta8,
+                                         float4 weight0)
         {
             float3 invDelta1 = H.Invers(delta1);
             float3 invDelta3 = H.Invers(delta3);
@@ -69,9 +67,9 @@ namespace Master
         }
 
         public static float4 GenerateWeightTest2(float kof11, float kof12, float kof21, float kof22,
-                             float3 delta1, float3 delta2, float3 delta3, float3 delta4,
-                             float3 delta5, float3 delta6, float3 delta7, float3 delta8,
-                             float4 weight0)
+                                         float3 delta1, float3 delta2, float3 delta3, float3 delta4,
+                                         float3 delta5, float3 delta6, float3 delta7, float3 delta8,
+                                         float4 weight0)
         {
             float3 invDelta1 = H.Invers(delta1);
             float3 invDelta3 = H.Invers(delta3);
@@ -167,17 +165,11 @@ namespace Master
                     rotH *= Quaternion.Euler(0f, 0, 180f);
                 }
                 // Geriau su su q arba qxq^-1
-
-
                 // rotH = new quaternion(0, rotH.value.y, rotH.value.z, rotH.value.w);
-
-                //rotH = new quaternion(rotH.value.x, 0, rotH.value.z, rotH.value.w);
-
+                //rotH = new quaternion(rotH.value.x, 0, rotH.value.z, rotH.value.w);s
                 //rotH = new quaternion(rotH.value.x, rotH.value.y, 0, rotH.value.w);
-
-                //rotH = new quaternion(rotH.value.x, rotH.value.y, rotH.value.z, 0);
+                //rotH = new quaternion(rotH.value.x, rotH.value.y, rotH.value.z, 0);  
                 rotations.Add(rotH); // Rotation
-
             }
             return (positions, rotations);
         }

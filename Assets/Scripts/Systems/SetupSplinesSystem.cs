@@ -9,55 +9,8 @@ namespace Master
 {
     public class SetupSplinesSystem : ComponentSystem
     {
-        /*
-        struct PHchunk
-        {
-            public readonly int Length;
-            public ComponentArray<PHmotionMarker> markers;
-            public ComponentArray<Transform> transforms;
-            public ComponentArray<MotionData> motions;
-
-        }
-        [Inject] private PHchunk _phs;
-
-        struct IRchunk
-        {
-            public readonly int Length;
-            public ComponentArray<IRp3v2motionMarker> markers;
-            public ComponentArray<Transform> transforms;
-            public ComponentArray<MotionData> motions;
-        }
-        [Inject] private IRchunk _irs;
-        */
-
-        private int CountCurves(Transform transform, string curveType, bool isClosedSpline)
-        {
-            int counter = 0;
-            foreach (Transform childTrans in transform)
-            {
-                if (childTrans.tag == "ControlPoint") { counter++; }
-            }
-
-            if (curveType == "PH") //PHcurve
-            {
-                if (isClosedSpline) return counter;
-                return counter - 1;
-            }
-            else if (curveType == "IRp3v2") //IRp3v2 curve
-            {
-                return (int) (counter / 2);
-            }
-            else if (curveType == "IRp5") //IRp5 curve
-            {
-                return 1;
-            }
-            return 0;
-        }
-
         protected override void OnStartRunning()
         {
-            //UpdateInjectedComponentGroups();
-
             // PH paths
             Entities.ForEach((
                 PHmotionMarker marker,
@@ -83,25 +36,60 @@ namespace Master
                     marker.TYPE,
                     motions.isClosedSpline);
             });
-
-            /*
-            for (int i = 0; i < _phs.Length; i++)
+        }
+        
+        private int CountCurves(Transform transform, string curveType, bool isClosedSpline)
+        {
+            int counter = 0;
+            foreach (Transform childTrans in transform)
             {
-                _phs.motions[i].curveCount = CountCurves(_phs.transforms[i],
-                                                          _phs.markers[i].TYPE,
-                                                          _phs.motions[i].isClosedSpline);
+                if (childTrans.CompareTag("ControlPoint")) { counter++; }
+            }
 
-            }
-           
-            for (int i = 0; i < _irs.Length; i++)
+            if (curveType == "PH") //PHcurve
             {
-                _irs.motions[i].curveCount = CountCurves(_irs.transforms[i],
-                                                          _irs.markers[i].TYPE,
-                                                          _irs.motions[i].isClosedSpline);
+                if (isClosedSpline) 
+                    return counter;
+                return counter - 1;
             }
-            */
+            else if (curveType == "IRp3v2") //IRp3v2 curve
+            {
+                return (int) (counter / 2);
+            }
+            else if (curveType == "IRp5") //IRp5 curve
+            {
+                return 1;
+            }
+            return 0;
         }
 
-        protected override void OnUpdate() { }
+        protected override void OnUpdate()
+        {
+            // PH paths
+            Entities.ForEach((
+                PHmotionMarker marker,
+                Transform transform,
+                MotionData motions
+            ) =>
+            {
+                motions.curveCount = CountCurves(
+                    transform,
+                    marker.TYPE,
+                    motions.isClosedSpline);
+            });
+
+            // IRp3v2 paths
+            Entities.ForEach((
+                IRp3v2motionMarker marker,
+                Transform transform,
+                MotionData motions
+            ) =>
+            {
+                motions.curveCount = CountCurves(
+                    transform,
+                    marker.TYPE,
+                    motions.isClosedSpline);
+            });
+        }
     }
 }

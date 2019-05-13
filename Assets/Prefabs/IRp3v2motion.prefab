@@ -172,15 +172,15 @@ MonoBehaviour:
   useTangentFix: 0
   useNormalFix: 0
   w1Kofs:
-  - -8
   - -2
-  - 8
-  - 50
-  w2Kofs:
+  - -2
+  - 1
   - -1
-  - -4
-  - -4
-  - -50
+  w2Kofs:
+  - -2
+  - -2
+  - 2
+  - 2
 --- !u!114 &4074508643503012133
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -315,6 +315,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nodePoints:
+  - x: 0
+    y: 0
+    z: 0
+  - x: 0
+    y: 0
+    z: 0
   - x: 0
     y: 0
     z: 0
