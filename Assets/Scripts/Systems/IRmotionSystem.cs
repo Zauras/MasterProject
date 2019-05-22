@@ -197,11 +197,11 @@ namespace Master
 
                     (List<float3>, List<quaternion>) IRcurveData =
                         IRp3v2Curve.FindIRcMotion(
-                            splineT, ref firstWeight,
+                                splineT, ref firstWeight,
                              useTangentFix,
-             useNormalFix, isRotWithWeight,
-                            CPs, vp0.localPosition, vp1.localPosition,
-                            w1Kofs, w2Kofs); // positions, rotations
+                                useNormalFix, isRotWithWeight,
+                                CPs, vp0.localPosition, vp1.localPosition,
+                                w1Kofs, w2Kofs); // positions, rotations
 
                     //List<float3> globalPositions = ConvertToGlobalPositions(IRcurveData.);
                     //IRcurveData.Item1 = 

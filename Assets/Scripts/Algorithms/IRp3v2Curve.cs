@@ -38,8 +38,13 @@ namespace Master
                                         delta20, frontVector, delta12, delta20,
                                         w0);
 
-            w0 = new float4(0f, 0f, 0f, 1f);
-            float4[] weights = { w0, w1, w2 };
+
+            //float4 w1t = wTest(w1Kof[0], w1Kof[1], frontVector, delta10, delta20, w0);
+            //float4 w2t = wTest(w2Kof[0], w2Kof[1], backVector, delta12, delta20, w1t);
+            
+           // w0 = new float4(0f, 0f, 0f, 1f); RESET w0
+             float4[] weights = { w0, w1, w2 };
+           //float4[] weights = { w0, w1t, w2t };
             w0 = w2;
             
             return GenerateCurve(

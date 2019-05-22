@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Entities;
@@ -23,22 +24,26 @@ namespace Master
         void OnDrawGizmos()
         {
             float3[] positions = GetComponent<MotionData>().positions;
-            
-            for (int i=0; i< positions.Length; i++)
+
+            try
             {
-                //X axis
-                Gizmos.color = Color.red;
-                Gizmos.DrawLine(positions[i], ERframes[i].vecX);
-                if (i != 0) Gizmos.DrawLine(ERframes[i - 1].vecX, ERframes[i].vecX);
-                //Y axis
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawLine(positions[i], ERframes[i].vecY);
-                if (i != 0) Gizmos.DrawLine(ERframes[i-1].vecY, ERframes[i].vecY);
-                //Z axis
-                Gizmos.color = Color.blue;
-                Gizmos.DrawLine(positions[i], ERframes[i].vecZ);
-                if (i != 0) Gizmos.DrawLine(ERframes[i-1].vecZ, ERframes[i].vecZ);
+                for (int i = 0; i < positions.Length; i++)
+                {
+                    //X axis
+                    Gizmos.color = Color.red;
+                    Gizmos.DrawLine(positions[i], ERframes[i].vecX);
+                    if (i != 0) Gizmos.DrawLine(ERframes[i - 1].vecX, ERframes[i].vecX);
+                    //Y axis
+                    Gizmos.color = Color.yellow;
+                    Gizmos.DrawLine(positions[i], ERframes[i].vecY);
+                    if (i != 0) Gizmos.DrawLine(ERframes[i - 1].vecY, ERframes[i].vecY);
+                    //Z axis
+                    Gizmos.color = Color.blue;
+                    Gizmos.DrawLine(positions[i], ERframes[i].vecZ);
+                    if (i != 0) Gizmos.DrawLine(ERframes[i - 1].vecZ, ERframes[i].vecZ);
+                }
             }
+            catch (NullReferenceException) {};
         }
 
         // Will be called after all regular rendering is done

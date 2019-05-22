@@ -20,33 +20,9 @@ namespace Master
         }
 
         public static float4 GenerateWeight(float kof11, float kof12, float kof21, float kof22,
-                                     float3 delta1, float3 delta2, float3 delta3, float3 delta4,
-                                     float3 delta5, float3 delta6, float3 delta7, float3 delta8,
-                                     float4 weight0)
-        {
-            float3 invDelta1 = H.Invers(delta1);
-            float3 invDelta3 = H.Invers(delta3);
-            float3 invDelta5 = H.Invers(delta5);
-            float3 invDelta7 = H.Invers(delta7);
-            
-            float4 firstPart = kof11 * H.Mult(invDelta1, delta2) 
-                               + kof12 * H.Mult(invDelta3, delta4);
-            
-            // Pagal iprasta formule
-            float4 secPart = kof21 * H.Mult(invDelta5, delta6)
-                               + kof22 * H.Mult(invDelta7, delta8);
-
-            // EXAMING:
-           // float4 weight = H.Mult(H.Mult(H.Invers(firstPart), secPart), weight0);
-            float4 weight = H.Mult(H.Invers(firstPart), secPart);
-            //weight = H.Mult(weight, weight0);
-            return weight;
-        }
-
-        public static float4 GenerateWeightTest1(float kof11, float kof12, float kof21, float kof22,
-                                         float3 delta1, float3 delta2, float3 delta3, float3 delta4,
-                                         float3 delta5, float3 delta6, float3 delta7, float3 delta8,
-                                         float4 weight0)
+            float3 delta1, float3 delta2, float3 delta3, float3 delta4,
+            float3 delta5, float3 delta6, float3 delta7, float3 delta8,
+            float4 weight0)
         {
             float3 invDelta1 = H.Invers(delta1);
             float3 invDelta3 = H.Invers(delta3);
@@ -54,46 +30,42 @@ namespace Master
             float3 invDelta7 = H.Invers(delta7);
 
             float4 firstPart = kof11 * H.Mult(invDelta1, delta2)
-                              + kof12 * H.Mult(delta8, invDelta3);
+                               + kof12 * H.Mult(invDelta3, delta4);
 
-            // Pagal iprasta formule
             float4 secPart = kof21 * H.Mult(invDelta5, delta6)
                              + kof22 * H.Mult(invDelta7, delta8);
-                             
 
+            // EXAMING:
+            // float4 weight = H.Mult(H.Mult(H.Invers(firstPart), secPart), weight0);
             float4 weight = H.Mult(H.Invers(firstPart), secPart);
-            //weight = H.Mult(weight, weights[0]);
+            weight = H.Mult(weight, weight0);
             return weight;
         }
 
-        public static float4 GenerateWeightTest2(float kof11, float kof12, float kof21, float kof22,
-                                         float3 delta1, float3 delta2, float3 delta3, float3 delta4,
-                                         float3 delta5, float3 delta6, float3 delta7, float3 delta8,
-                                         float4 weight0)
+
+        public static float4 wTest(
+            float k1, float k2,
+            float3 v, float3 d, float3 df,
+            float4 w)
         {
-            float3 invDelta1 = H.Invers(delta1);
-            float3 invDelta3 = H.Invers(delta3);
-            float3 invDelta5 = H.Invers(delta5);
-            float3 invDelta7 = H.Invers(delta7);
+            float3 invV = H.Invers(v);
+            float3 invDF = H.Invers(df);
+            float3 invD = H.Invers(d);
 
-            float4 firstPart = kof11 * H.Mult(invDelta1, delta2)
-                               + kof12 * H.Mult(delta8, invDelta3);
+            float4 firstPart = k1 * H.Mult(invD, v);
+            float4 secPart = k2 * H.Mult(invV, d);
 
-            // Pagal iprasta formule
-            float4 secPart = kof21 * H.Mult(invDelta5, delta6);
-            // + kof22 * H.Mult(invDelta7, delta8);
-
-            float4 weight = H.Mult(H.Invers(firstPart), secPart);
-            //weight = H.Mult(weight, weights[0]);
+            float4 weight = firstPart + secPart;
+           //float4 weight = H.Mult(H.Invers(secPart), firstPart);
+           //float4 weight = k1 * H.Mult(invDF, v);
+            weight = H.Mult(weight, w);
             return weight;
         }
 
-
-
-        public static List<float> getFiList(float t)
+        public static List<float> getFiList(float[] TList, float t)
         { // kreives funkcija
           // fi(t) = MultLoop(k!=i): t - t[k]
-            float[] TList = BootStrap.Settings.TList;
+            //float[] TList = BootStrap.Settings.TList;
             List<float> fList = new List<float>();
             for (int i = TList.Length - 2; i >= 0; i--)
             {
@@ -108,6 +80,44 @@ namespace Master
             }
             return fList;
         }
+        
+        private static float[] GetTimeList(float[] TList)
+        {
+            int rez = BootStrap.Settings.pathResolution;
+            float deltaStep = TList[TList.Length - 1] / rez;
+
+            //float rez1 = TList[2] / TList[1] * rez;
+            //float rez2 = TList[2] / (TList[2] - TList[1]) * rez;
+            
+            
+            //float deltaStep1 = TList[1] / rez1;
+            //float deltaStep2 = (TList[1] - TList[2]) / rez2;
+
+           float t = 0.0f;
+           float[] timePath = new float[rez+1];
+            
+            for (int i = 0; i < rez + 1; i++)
+            {
+                timePath[i] = t;
+                t += deltaStep;
+                //if (i < rez1) t += deltaStep1;
+                //else t += deltaStep2;
+            }
+            return timePath;
+        }
+
+
+        private static float[] GetDeltaList(float3[] points)
+        {
+            float[] deltaList = new float[points.Length];
+            deltaList[0] = 0f;
+            for (int i = 0; i < points.Length-1; i++)
+            {
+                deltaList[i + 1] = math.distance(points[i + 1], points[i]);
+            }
+            return deltaList;
+        }
+        
 
         public static (List<float3>, List<quaternion>) GenerateCurve(Transform curveT,
                                                                     bool useTengentFix,
@@ -116,7 +126,10 @@ namespace Master
                                                                     float3[] points,
                                                                     float4[] weights)
         {
-            float[] timePath = PathTimeList.timePath;
+           float[] timePath = PathTimeList.timePath;
+           float[] TList = BootStrap.Settings.TList;
+          // float[] TList = GetDeltaList(points);
+           //float[] timePath = GetTimeList(TList);
 
             //DualQuaternion[] cDHarr = new DualQuaternion[timePath.Length];
             List<float3> positions = new List<float3>();
@@ -132,7 +145,7 @@ namespace Master
                 q = new float4(0, 0, 0, 0); // Ft(t)
                 p = new float4(0, 0, 0, 0); // Wt(t)
 
-                List<float> fiList = getFiList(timePath[t]);
+                List<float> fiList = getFiList(TList, timePath[t]);
 
                 for (int i = 0; i < BootStrap.Settings.TList.Length; i++)
                 {
