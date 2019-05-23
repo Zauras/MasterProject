@@ -23,6 +23,19 @@ namespace Master
                     marker.TYPE,
                     motions.isClosedSpline);
             });
+            
+            // RPH paths
+            Entities.ForEach((
+                RphMotionMarker marker,
+                Transform transform,
+                MotionData motions
+            ) =>
+            {
+                motions.curveCount = CountCurves(
+                    transform,
+                    marker.TYPE,
+                    motions.isClosedSpline);
+            });
 
             // IRp3v2 paths
             Entities.ForEach((
@@ -41,13 +54,19 @@ namespace Master
         private int CountCurves(Transform transform, string curveType, bool isClosedSpline)
         {
             int counter = 0;
-            foreach (Transform childTrans in transform)
+            if (curveType == "PH" || curveType == "IRp3v2" || curveType == "IRp5")
             {
-                if (childTrans.CompareTag("ControlPoint")) { counter++; }
+                foreach (Transform childTrans in transform)
+                    if (childTrans.CompareTag("ControlPoint")) { counter++; }
+            } else if (curveType == "RPH")
+            {
+                foreach (Transform childTrans in transform.GetChild(0))
+                    if (childTrans.CompareTag("ControlPoint")) { counter++; }
             }
 
-            if (curveType == "PH") //PHcurve
+            if (curveType == "PH" || curveType == "RPH") // PHcurve & RPHcurve
             {
+                Debug.Log("HELLO");
                 if (isClosedSpline) 
                     return counter;
                 return counter - 1;
@@ -68,6 +87,19 @@ namespace Master
             // PH paths
             Entities.ForEach((
                 PHmotionMarker marker,
+                Transform transform,
+                MotionData motions
+            ) =>
+            {
+                motions.curveCount = CountCurves(
+                    transform,
+                    marker.TYPE,
+                    motions.isClosedSpline);
+            });
+            
+            // RPH paths
+            Entities.ForEach((
+                RphMotionMarker marker,
                 Transform transform,
                 MotionData motions
             ) =>

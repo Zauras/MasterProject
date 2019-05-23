@@ -22,7 +22,8 @@ namespace Master {
 
         /// IF: Spline begining || Independent Curve
         public static (List<float3>, List<quaternion>) FindPHcMotion(Transform pT0, Transform pT1,
-                                                                      quaternion v0, quaternion v1)
+                                                                      quaternion v0, quaternion v1,
+                                                                      bool calcRot=true)
         {
             float4 q0 = FindEndPointRotations(v0, Mathf.PI / 8f);
             float4 q1 = FindEndPointRotations(v1, Mathf.PI / 8f);
@@ -30,30 +31,33 @@ namespace Master {
             pT1.rotation = H.Float4ToQuat(q1);
 
             (List<float3>, List<quaternion>) movementData = CalcPHcurveMotion(pT0.position, q0,
-                                                                               pT1.position, q1);
+                                                                               pT1.position, q1,
+                                                                                calcRot);
             return movementData;
         }
 
         /// IF: Spline Middleware || OpenSpline Ending
         public static (List<float3>, List<quaternion>) FindPHcMotion(Transform pT0, 
                                                                       Transform pT1, 
-                                                                      quaternion v1  )
+                                                                      quaternion v1,
+                                                                      bool calcRot=true)
         {
             float4 q1 = FindEndPointRotations(v1, Mathf.PI / 8f);
             pT1.rotation = H.Float4ToQuat(q1);
 
             (List<float3>, List<quaternion>) movementData = CalcPHcurveMotion(
                                         pT0.position, H.QuatToFloat4(pT0.rotation), 
-                                         pT1.position, q1);
+                                         pT1.position, q1, calcRot);
             return movementData;
         }
 
         /// IF: ClosedSpline Ending
-        public static (List<float3>, List<quaternion>) FindPHcMotion(Transform pT0, Transform pT1)
+        public static (List<float3>, List<quaternion>) FindPHcMotion(Transform pT0, Transform pT1, bool calcRot=true)
         {
             (List<float3>, List<quaternion>) movementData = CalcPHcurveMotion(
                                         pT0.position, H.QuatToFloat4(pT0.rotation),
-                                         pT1.position, H.QuatToFloat4(pT1.rotation));
+                                         pT1.position, H.QuatToFloat4(pT1.rotation),
+                                        calcRot);
             return movementData;
         }
 
@@ -158,12 +162,13 @@ namespace Master {
 
             float phi = -Mathf.PI / 2.0f;
             float4 qphi = new float4(m.sin(phi), 0f, 0f, m.cos(phi));
-            //float4 qphi = H.Round(new float4(m.sin(phi), 0f, 0f, m.cos(phi))); !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            //float4 qphi = H.Round(new float4(m.sin(phi), 0f, 0f, m.cos(phi)));
             return -0.5f * bb + H.Mult(Y, qphi);
         }
 
+       
         private static (List<float3>, List<quaternion>) CalcPHcurveMotion (
-                float3 point0, float4 q0, float3 point1, float4 q1)
+                float3 point0, float4 q0, float3 point1, float4 q1, bool calclRot)
         {
             float4 p0 = new float4(point0, 0f);
             float4 p1 = new float4(point1, 0f);
@@ -197,15 +202,17 @@ namespace Master {
 
             for (int i = 0; i <= rez; i++)
             {
-                //float timeDelta = time - 1f;
                 float timeDelta = 1f - time;
 
                 // float3 hodPoint = FindHodographPoint(time, timeDelta, bezPoints); //hodograph point (hod(t))
-                quaternion rotation = FindRotation(time, timeDelta, rotationPolynomial); //rotations (aa in maple, in text A(t))
                 float3 curvePoint = FindCurvePoint(time, timeDelta, intBezPoints); // PH curve points (pp(t))
-
                 pathPoints.Add(curvePoint);
-                pathRotations.Add(rotation);
+
+                if (calclRot)
+                {
+                    quaternion rotation = FindRotation(time, timeDelta, rotationPolynomial); //rotations (aa in maple, in text A(t))
+                    pathRotations.Add(rotation);
+                }
                 time += timeStep;
             }
             return (pathPoints, pathRotations);

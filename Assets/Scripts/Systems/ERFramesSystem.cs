@@ -12,18 +12,6 @@ namespace Master
     [UpdateAfter(typeof(PHmotionSystem))]
     public class ERFramesSystem : ComponentSystem
     {
-        /*
-        struct Chunks
-        {
-            //Using as a filter & dataEntries (no actual Enteties)
-            public readonly int Length;
-            public ComponentArray<Transform> transform;
-            public ComponentArray<MotionData> motion;
-            public ComponentArray<PathERFs> pathERFs;
-        }
-        [Inject] Chunks _paths;
-        */
-
         protected override void OnUpdate()
         {
             Entities.ForEach((

@@ -10,24 +10,6 @@ namespace Master
     [UpdateBefore(typeof(MasterEngineSystem))]
     public class LineRendererSystem : ComponentSystem
     {
-        /*
-        struct PathChunks
-        {
-            public readonly int Length;
-            public ComponentArray<MotionData> paths;
-            public ComponentArray<LineRenderer> lrs;
-        }
-        [Inject] private PathChunks _pathChunks;
-
-        struct VectorChunks
-        {
-            public readonly int Length;
-            public ComponentArray<VectorPointMarker> vectors;
-            public ComponentArray<LineRenderer> lrs;
-        }
-        [Inject] private VectorChunks _vectorChunks;
-        */
-
         protected override void OnStartRunning()
         {
             //UpdateInjectedComponentGroups();
@@ -44,6 +26,22 @@ namespace Master
            Entities.ForEach((VectorPointMarker vectorMarker, LineRenderer lineRenderer) =>
            {
                SetupLineRenderer(lineRenderer,
+                   BootStrap.Settings.lineWide / 2f,
+                   Color.red, 
+                   BootStrap.Settings.lineRendererMaterial);
+           });
+           
+           Entities.ForEach((RphMotionMarker marker, Transform parentTransform) =>
+           {
+               LineRenderer movementPhLr = parentTransform.GetChild(0).GetComponent<LineRenderer>();
+               LineRenderer rotationPhLr = parentTransform.GetChild(1).GetComponent<LineRenderer>();;
+               
+               SetupLineRenderer(movementPhLr,
+                   BootStrap.Settings.lineWide,
+                   BootStrap.Settings.lineColor,
+                   BootStrap.Settings.lineRendererMaterial);
+               
+               SetupLineRenderer(rotationPhLr,
                    BootStrap.Settings.lineWide,
                    BootStrap.Settings.lineColor,
                    BootStrap.Settings.lineRendererMaterial);

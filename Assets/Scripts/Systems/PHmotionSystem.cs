@@ -9,20 +9,6 @@ namespace Master
 {
     public class PHmotionSystem : ComponentSystem
     {
-        /*
-        struct Chunks
-        {
-            //public EntityArray entities;
-            private ComponentArray<PHmotionMarker> markers;
-
-            public readonly int Length;
-            public ComponentArray<Transform> transforms;
-            public ComponentArray<MotionData> motions;
-            public ComponentArray<LineRenderer> lineRenderers;
-        }
-        [Inject] private Chunks _paths;
-        */
-
         struct CPsAndVectors
         {
             public CPsAndVectors(Transform[] controlPoints, Transform[] vecPoints) : this()
@@ -189,38 +175,38 @@ namespace Master
 
         protected override void OnUpdate()
         {
-            if (!BootStrap.Settings.stopTime)
+            //if (!BootStrap.Settings.stopTime) return;
+            
+            Entities.ForEach((
+                PHmotionMarker motionMarker,
+                Transform pathTransform,
+                LineRenderer lineRenderer,
+                MotionData motions
+            ) =>
             {
-                Entities.ForEach((
-                    PHmotionMarker m,
-                    Transform pathTransform,
-                    LineRenderer lineRenderer,
-                    MotionData motions
-                ) =>
-                {
                  (float3[], quaternion[]) PHmotion = Calc_PH_motion(pathTransform,
-                     motions.isClosedSpline,
-                     motions.curveCount);
+                                                                    motions.isClosedSpline,
+                                                                    motions.curveCount);
                  motions.positions = PHmotion.Item1;
                  motions.rotations = PHmotion.Item2;
                  LineRendererSystem.SetPolygonPoints(lineRenderer, PHmotion.Item1);
-                 });
+             });
 
-                //BootStrap.Settings.stopTime = true;
+            //BootStrap.Settings.stopTime = true;
 
-                /*
-                for (int i = 0; i < _paths.Length; i++) // Paths
-                {
-                    Transform pathTransform = _paths.transforms[i];
-                    (float3[], quaternion[]) PHmotion = Calc_PH_motion(pathTransform,
-                                                                       _paths.motions[i].isClosedSpline,
-                                                                       _paths.motions[i].curveCount);
-                    _paths.motions[i].positions = PHmotion.Item1;
-                    _paths.motions[i].rotations = PHmotion.Item2;
-                    LineRendererSystem.SetPolygonPoints(_paths.lineRenderers[i], PHmotion.Item1);
-                }
-                */
+            /*
+            for (int i = 0; i < _paths.Length; i++) // Paths
+            {
+                Transform pathTransform = _paths.transforms[i];
+                (float3[], quaternion[]) PHmotion = Calc_PH_motion(pathTransform,
+                                                                   _paths.motions[i].isClosedSpline,
+                                                                   _paths.motions[i].curveCount);
+                _paths.motions[i].positions = PHmotion.Item1;
+                _paths.motions[i].rotations = PHmotion.Item2;
+                LineRendererSystem.SetPolygonPoints(_paths.lineRenderers[i], PHmotion.Item1);
             }
+            */
+
         }
 
     }
