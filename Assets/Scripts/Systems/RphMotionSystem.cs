@@ -154,9 +154,7 @@ namespace Master
                 if (c == 0) // BEGINING OF SPLINE // full Algorithm (as independent curves)
                 {
                     float3 firstMovementCp = movementControlPoints[cp];
-                    Debug.Log(cp);
                     firstCP = pathTransform.GetChild(cp++);
-                    Debug.Log(cp);
                     float3 currMovementCp = movementControlPoints[cp];
                     currCP = pathTransform.GetChild(cp++);
 
@@ -171,7 +169,6 @@ namespace Master
                     else
                     {
                         vH0 = vHFirst = CalcDirectionQuat(currCP.position, firstCP.position);
-                        vHFirst = vH0;
                         if (pathTransform.childCount > cp)
                             vH1 = CalcDirectionQuat(pathTransform.GetChild(cp).position, currCP.position);
                         else
@@ -188,8 +185,9 @@ namespace Master
                     // DARANT SPLINE - ypac closed, perziuretis
                     (List<float3>, List<quaternion>) PHcurveData =
                         PHodCurve.FindPHcMotion(firstCP, currCP, vH0, vH1, false); // positions, rotations
-
+                    
                     posSpline.AddRange(PHcurveData.Item1); // position
+                    vH0 = vH1;
                 } 
                 else if (c == curveCount - 1 && isClosedSpline) // Closed Splane End
                 {         
@@ -206,33 +204,31 @@ namespace Master
                     float3 nextMovementCp = movementControlPoints[cp];
                     Transform nextCP = pathTransform.GetChild(cp++);
 
-                     LineRendererSystem.SetLinePoints(nextCP.GetComponent<LineRenderer>(),nextCP.position, nextMovementCp);
+                    LineRendererSystem.SetLinePoints(nextCP.GetComponent<LineRenderer>(),nextCP.position, nextMovementCp);
 
-                     
-                     if (useMovmentVectors)
-                     {
-                         vH1 = vecRots[vp++];
-                     }
-                     else
-                     {
-                         if (pathTransform.childCount > cp)
-                             vH1 = CalcDirectionQuat(pathTransform.GetChild(cp).position, nextCP.position); 
-                         else
-                         if (isClosedSpline) vH1 = CalcDirectionQuat(firstCP.position, currCP.position);
-                         else vH1 = vH0;
-                     }
-
-                     if (drawDebugVectors)
-                     {
-                         Debug.DrawRay(currCP.position, new float3(vH0.value.x, vH0.value.y, vH0.value.z), Color.yellow);
-                         Debug.DrawRay(nextCP.position, new float3(vH1.value.x, vH1.value.y, vH1.value.z), Color.green);
-                     }
-                     
+                    if (useMovmentVectors) vH1 = vecRots[vp++];
+                    else
+                    {
+                        if (pathTransform.childCount > cp) 
+                            vH1 = CalcDirectionQuat(pathTransform.GetChild(cp).position, nextCP.position);
+                        else
+                        {
+                            if (isClosedSpline) vH1 = CalcDirectionQuat(firstCP.position, currCP.position);
+                            else vH1 = vH0;  
+                        }
+                    }
+                      
+                    if (drawDebugVectors)
+                    {
+                       Debug.DrawRay(currCP.position, new float3(vH0.value.x, vH0.value.y, vH0.value.z), Color.yellow);
+                       Debug.DrawRay(nextCP.position, new float3(vH1.value.x, vH1.value.y, vH1.value.z), Color.green);
+                    }
+                      
                     (List<float3>, List<quaternion>) PHcurveData =
-                        PHodCurve.FindPHcMotion(currCP, nextCP, vH0, vH1, false); // positions, rotations
+                    PHodCurve.FindPHcMotion(currCP, nextCP, vH0, vH1, false); // positions, rotations
                     currCP = nextCP;
                     vH0 = vH1;
-
+                      
                     posSpline.AddRange(PHcurveData.Item1); // position
                 }
             }

@@ -66,7 +66,6 @@ namespace Master
 
             if (curveType == "PH" || curveType == "RPH") // PHcurve & RPHcurve
             {
-                Debug.Log("HELLO");
                 if (isClosedSpline) 
                     return counter;
                 return counter - 1;
