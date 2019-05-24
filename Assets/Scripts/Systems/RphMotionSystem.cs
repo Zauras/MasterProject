@@ -194,8 +194,8 @@ namespace Master
                     (List<float3>, List<quaternion>) PHcurveData =
                         PHodCurve.FindPHcMotion(currCP, firstCP, vH1, vHFirst, false); // positions, rotations
                     
-                    Debug.DrawRay(currCP.position, new float3(vH1.value.x, vH1.value.y, vH1.value.z), Color.yellow);
-                    Debug.DrawRay(firstCP.position, new float3(vHFirst.value.x, vHFirst.value.y, vHFirst.value.z), Color.green);
+                    Debug.DrawRay(currCP.position, new float3(vH1.value.x, vH1.value.y, vH1.value.z), Color.magenta);
+                    Debug.DrawRay(firstCP.position, new float3(vHFirst.value.x, vHFirst.value.y, vHFirst.value.z), Color.magenta);
 
                     posSpline.AddRange(PHcurveData.Item1); // position
                 }
@@ -213,15 +213,15 @@ namespace Master
                             vH1 = CalcDirectionQuat(pathTransform.GetChild(cp).position, nextCP.position);
                         else
                         {
-                            if (isClosedSpline) vH1 = CalcDirectionQuat(firstCP.position, currCP.position);
+                            if (isClosedSpline) vH1 = CalcDirectionQuat(firstCP.position, nextCP.position);
                             else vH1 = vH0;  
                         }
                     }
                       
                     if (drawDebugVectors)
                     {
-                       Debug.DrawRay(currCP.position, new float3(vH0.value.x, vH0.value.y, vH0.value.z), Color.yellow);
-                       Debug.DrawRay(nextCP.position, new float3(vH1.value.x, vH1.value.y, vH1.value.z), Color.green);
+                       Debug.DrawRay(currCP.position, new float3(vH0.value.x, vH0.value.y, vH0.value.z), Color.magenta);
+                       Debug.DrawRay(nextCP.position, new float3(vH1.value.x, vH1.value.y, vH1.value.z), Color.magenta);
                     }
                       
                     (List<float3>, List<quaternion>) PHcurveData =
